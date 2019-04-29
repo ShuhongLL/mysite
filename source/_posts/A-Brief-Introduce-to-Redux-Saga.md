@@ -5,8 +5,7 @@ tags: [Redux, Saga, React]
 photos: ["../images/redux-saga.JPG"]
 ---
 <div style="text-align: justify">
-If you are quite experienced with redux, which is a predictable state container for JavaScript applications (**Note:** even thouth React and Redux is a popular combination to build fast and powerful apps, Redux is not necessarily combined with React), you are definitely feeling comfortable with its powerful store which manages all the global states and provides much cleaner logic flows to change them. If you are new to redux, [here](https://redux.js.org/introduction/getting-started) is the guide to dive before we start our topic.</div>
-
+If you are quite experienced with redux, which is a predictable state container for JavaScript applications (**Note:** even thouth React and Redux is a popular combination to build fast and powerful apps, Redux is not necessarily combined with React), you are definitely feeling comfortable with its powerful store which manages all the global states and provides much cleaner logic flows to change them. If you are new to redux, [here](https://redux.js.org/introduction/getting-started) is the guide to dive before we start our topic.</div><!-- more -->
 <div style="text-align: justify">
 In a complex javascript application, asynchronous function is always one of the most annoying part where encounters tons of bugs. If not handle them properly, the app usually ends up with ***call back hell***.
 </div>

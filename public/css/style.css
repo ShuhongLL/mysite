@@ -879,7 +879,7 @@ html {
 body {
   background-color: #fff;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   line-height: 1.7;
   color: #1e3e3f;
   padding: 0;
@@ -1010,8 +1010,9 @@ img {
   display: block;
   padding: 0 1.5rem;
   width: 100%;
+  text-align: justify;
   overflow: auto;
-  border-left: 0.3rem #9c8079 solid;
+  border-left: 0.3rem #4db7e8 solid;
   color: #5c6b72;
 }
 .article-entry blockquote > :first-child {
@@ -1239,7 +1240,7 @@ img {
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
   border-radius: 50%;
-  background-color: #9c8079;
+  background-color: #4db7e8;
   color: #fff;
   text-align: center;
   cursor: pointer;
@@ -1946,7 +1947,7 @@ pre .javascript .function {
 }
 .gitalk,
 .markdown-body {
-  font-size: 1.4rem !important;
+  font-size: 1.5rem !important;
 }
 .gt-container .gt-avatar.gt-comment-avatar img {
   -webkit-border-radius: 50%;
