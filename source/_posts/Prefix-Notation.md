@@ -2,6 +2,7 @@
 title: Prefix Notation
 date: 2019-04-30 11:11:21
 tags:
+photos: ["../images/lisp.JPG"]
 ---
 ```python
 ( 20 + 5 )
@@ -77,7 +78,7 @@ If we end it up with **1!**, then simply output **1**. Then the factorial functi
                       ( fib( - n 2 ) )))))
 ```
 You may find out that this procedure is not really efficient because to compute **fib( - n 1)**, **fib( - n 2)** has to be computed one more time which causes duplicated work.
-![Tree Recursion](../images/TreeRecursion.png)
+![Tree Recursion](../images/treeRecursion.png)
 Therefore, instead of ***Tree Recursion***, let's try to convert it to be ***Linear Recursion***. Reasign the sum of **a** and **b** to **a**, and the previous **a** to **b**:
 ```python
 ( define ( fib n )
@@ -88,3 +89,34 @@ Therefore, instead of ***Tree Recursion***, let's try to convert it to be ***Lin
         b
         ( iterate ( + a b ) a ( - count 1 ))))
 ```
+</br>
+## Lambda
+Instead of defining some trivial procedures so that we can pass them as arguments of the other procedures, functional programming provides ***Lambda Expression***:
+>( lambda ( <\formal-param> ) <\body> )
+
+For instance,
+```python
+( define ( Add a b ) ( + a b ))
+```
+can be written as:
+```python
+( define add ( lambda ( a b ) ( + a b ) ) )
+```
+And operators can also be represented by ***Lambda Expression***:
+```python
+( ( lambda ( a b ) ( + ( * a a ) ( * b b ) ) ) 2 3 )
+```
+Another use of ***Lambda Expression*** is creating local variables. An expression can be binded with a specific name by using keyword ***let***. The above example then can be interpreted as:
+```python
+( define ( sumsqr x y )
+    ( let ( a ( * x x ) )
+          ( b ( * y y ) )
+        ( + a b ) ) )
+```
+***Note:*** The scope of a variable specified by a ***let*** is only applied to the **body** of the ***let***. For example, if the evalue of **x** is **2**, then the expression:
+```python
+( let ( ( x 3 )
+        ( y ( + x 2 ) ) )
+    ( * x y ) )
+```
+The value of **y** will be **4** as being outside of the **let** body, and the output will be **3 * 4 = 12**. It seems like ***let*** is really similar to ***define***; however, in the most cases, we much prefer using ***let*** and only apply ***define*** to **internal procedures**.

@@ -61,3 +61,5 @@ gitalk:
   repo: # Repository name
   owner: # GitHub ID
   admin: # GitHub ID
+
+post_asset_folder: true
