@@ -1,7 +1,7 @@
 ---
 title: Prefix Notation
 date: 2019-04-30 11:11:21
-tags:
+tags: [Lisp, Scheme, Prefix Notation, Functional Programming]
 photos: ["../images/lisp.JPG"]
 ---
 ```python
