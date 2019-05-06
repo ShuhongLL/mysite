@@ -7,6 +7,7 @@ photos: ["../images/cli.JPG"]
 The core of Mac OS is Darwin and we can use most of the CLI tools in Mac OS just like how it feels like in Linux. If we want to check out the current ports in usage, the command **`netstat`** is useful:
 >netstat -ap tcp | grep -i "listen"
 
+<!-- more -->
 That will print out something like this in the console:
 ```
 Achive Internet connections (including servers)
