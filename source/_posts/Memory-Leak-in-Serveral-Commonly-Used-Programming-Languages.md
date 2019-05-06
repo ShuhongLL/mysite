@@ -4,14 +4,14 @@ date: 2019-05-05 15:37:22
 tags: [C++, Java, Python, NodeJS]
 photos: ["../images/Memory-Leaks.JPG"]
 ---
-Usually when we talk about memory leak we are actually talking about the memory leak in the heap memory. That is when an object being initialized, it will be allocated to a piece of memory in the heap and can be manipulated, after we perform some operations and terminate the whole procedure, that piece of memory is not erased but held in the heap, marked as being occupied but no reference point to it.
+Usually when we talk about memory leaks we are actually talking about the memory leaks in heap memory. When an object is initialized, it will be dynamically allocated to a piece of memory in the heap and ready to be manipulated. After we perform some operations and the whole procedure is finished, the object stored in heap should also be erased; however in the case of memory leak, that piece of memory is not released but still held in the heap, marked as occupied but no reference refers to it.<!-- more -->
 
 Wiki's Def:
->**Memory** leak is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that 
+>[**Memory leak**](https://en.wikipedia.org/wiki/Memory_leak) is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that: 
 - memory which is no longer needed is not released
 - an object is stored in memory but cannot be accessed by the running code
 
-We usually encounter this issue in programming languages that don't have **GC** (Garbage Collector), for example C++ and C. For such languages, we have to manage the memory by ourselves which, if not done properly, will expose the risk of memory leak.
+We usually encounter this issue in programming languages that don't have [**GC**](https://en.wikipedia.org/wiki/Garbage_collection_(computer_science), for example C++ and C. For such languages, we have to manage the memory by ourselves which, if not done properly, will expose the risks of memory leaks.
 </br>
 
 ## This is really common in C++
@@ -51,18 +51,18 @@ class Sample {
 Smart pointer helps you manage this object and if it is not referred anymore, release its memory.
 </br>
 
-## Can free( )/delete release everything in memory?
-You may think your program has a really concrete and strict control flow and you are so confident that **free( )** or **delete** is called before the procedure exits but does it release all the unrefered memory? **No! it is able to release the memory where the pointer is currently pointing to but not the pointer itself!** The pointer will still point to the original memory address but the content has been already removed. In this circumstance, the value of the pointer does not equal to **NULL**, instead some random values that cannot be predicted.
+## free( )/delete is not enough
+Now your program has such a concrete control flow that **free( )** or **delete** is called before all the possible drop out. That is great but still not enough. **free( )** and **delete** can **only release the memory where the pointer is currently pointing to but not the pointer itself!** The pointer will still point to the original memory address but the content has been already removed. In this circumstance, the value of the pointer does not equal to **NULL**, instead some random values that cannot be predicted.
 ```c++
 int main( ) {
     char *p = ( char* ) malloc( sizeof( char ) * 100 );
     strcpy( p, "hello" );
     free( p );
     if ( p != NULL ) //doesn't prevent issue
-        strcpy( p, "world" ); //throw error
+        strcpy( p, "world" ); // error
 }
 ```
-This pointer p is called ***wild pointer*** and will only be erased after the whole procedure is finished or terminated. The wild pointer is really risky because of its random behavior. To prevent it, **always set the pointer to be NULL when it is not used/the memory it points to is released**.
+This pointer p is called [***dangling pointer*** or ***wild pointer***](https://en.wikipedia.org/wiki/Dangling_pointer) and will only be erased after the whole procedure is finished or terminated. The wild pointer is really risky because of its random behavior. Imagine there is something in your room that sometimes can be observed sometimes cannot, randomly breaks your stuff but never leaves footprint. In programming it is called ***wild pointer***, and in real life it is called [**cat**](https://en.wikipedia.org/wiki/Cat). To prevent it, we should **always set the pointer to be NULL when it is not used/the memory is released**.
 
 ***Note***: when you define a pointer without setting up its initial value, that pointer will also be a ***wild pointer*** and has a value of some random number (which doesn't equal to **NULL**). Hence it is necessary to set the value of a pointer to be **NULL** if it cannot be asigned a value at the beginning.
 
@@ -78,7 +78,7 @@ int main( ) {
     cout << v.capacity( ) << endl;  //memory usage: still 54M
 }
 ```
-Even though we have cleared the vector and all its elements were indeed released, the capacity of the vector is still unchanged. **clear( )** removed all its element but cannot shrink the size of the container which has already been allocated. The same thing happens to other containers such as **deque**. To handle that, before **C++ 11**, we can swap the pointer:
+Even though we have cleared the vector and all its elements were indeed released, the capacity of the vector is still unchanged. **clear( )** removed all its element but cannot shrink the size of the container. The same thing happens to other containers such as **deque**. To handle this, before **C++ 11**, we can swap the pointers:
 ```c++
 int main( ) {
     ...
@@ -91,7 +91,7 @@ after C++ 11, it provides function **shrink_to_fit( )** to remove the extra allo
 </br>
 
 ## GC doesn't avoid memory leaks
-It's not suprising that GC can prevent most cases of memory leaks because it is runnig in an individual thread, checking the memory regularly and removing the unreferred objects. It is so powerful that porgrammers rarely pay attention to memory management and be aware of the memory leaks. **Java** is such language which has powerful and unruly GC that can be hardly controlled (call **System.gc( )** doesn't certainly invoke GC). It helps to manage the memory in jvm, but it cannot totally avoid memory leaks in Java.
+It's not suprising that GC can prevent most cases of memory leaks because it is runnig in an individual thread, checking the memory regularly and removing the unreferred objects. It is so powerful that porgrammers rarely pay attention to memory management and be aware of the memory leaks. **Java** is such language which has powerful and unruly GC that can be hardly controlled (call **System.gc( )** doesn't certainly invoke GC). It helps to manage the memory in jvm, but it cannot avoid memory leaks.
 
 There are mainly two cases that can lead to memory leaks in Java. One is the object which has a longer lifecycle keeps a reference to another object which has a shorter lifecycle:
 ```java
@@ -104,21 +104,18 @@ public class Sample {
     ...
 }
 ```
-If ***object*** is only used inside ***anymethod( )***, then after stack pops ***anymethod( )***, the lifecycle of ***object*** should also be ended. But for here, because class ***Sample*** is still proceeding and it keeps the reference to ***object***, ***object*** cannot be collected by GC and hence leaks the memory. The solution will be either init ***object*** inside ***anymethod( )*** (as a local varible) or set ***object*** to be ***null*** after ***anymethod*** is finished.
+If ***object*** is only used inside ***anymethod( )***, then after stack pops ***anymethod( )***, the lifecycle of ***object*** should also be ended. But for here, because class ***Sample*** is still proceeding and keeps the reference of ***object***, ***object*** cannot be collected by GC and hence leaks the memory. The solution will be either init ***object*** inside ***anymethod( )*** (as a local varible) or set ***object*** to be ***null*** after ***anymethod*** is finished.
 
-Another case is the use of ***HashSet***. ***HashSet*** is the implement of hash-table and it stores elements according to their different hash values. In order to push and withdraw the sample object in the ***HashSet***, we need to override the method ***HashCode( )*** so that the same object has the same hash vaule and being stored in the same place in ***HashSet***. However, if we push something into the ***HashSet*** and then change some properties of this object (those properties are most likely to be used to calculate the hashcode), the hashcode of this object may vary and when we refer this object back to our ***HashSet*** to do some operations, for example delete this object from the ***HashSet***, this object might not be found in the set and hence cannot be deleted:
+Another case is the use of ***HashSet***. ***HashSet*** is the implementation of hash-table and it stores elements according to their different hash values. In order to push and withdraw the same object in the ***HashSet***, we need to override the method ***HashCode( )*** so that the same object has the same hash vaule and being stored in the same place in ***HashSet***. However, if we push something into the ***HashSet*** and then change some properties of this object (those properties are most likely to be used to calculate the hashcode), the hashcode of this object may vary and when we refer this object back to our ***HashSet*** to do some operations, for example delete this object from the ***HashSet***, this object might not be found in the set and hence cannot be deleted:
 ```java
     HashSet<Obejct> set = new HashSet<Object>( );
     Object something = new Object( );
     set.add( something );
     something.doSomethingChanges( );
     set.contains( something );  //this may return false
-    set.remove( something );  //something cannot be removed if the previous line returns false
+    set.remove( something );  //'something' cannot be removed if the previous line returns false
 ```
 </br>
 
-##Python
-
-
-
+## Python
 
