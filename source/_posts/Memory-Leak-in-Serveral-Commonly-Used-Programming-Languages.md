@@ -15,7 +15,7 @@ We usually encounter this issue in programming languages that don't have [**GC**
 </br>
 
 ## This is really common in C++
-Let's take a look in C++. There are literally hundreds of ways that can cause the memory leak and most of them won't be detected during compilation and even the runtime. Only a few leaks will not have any impact on the system; however if we are running a huge application and those leaks accumulate, that will significantly reduce the real runtime performance of the system.
+Let's take a look in C++. There are literally hundreds of ways that can cause memory leaks and most of them won't be detected during compilation and even in runtime. Only a few leaks will not have any impact on the system; however if we are running a huge application and those leaks accumulate, that will significantly reduce the real runtime performance of the whole system.
 
 We all know that when we allocate an object, we have to release the memory if this object is not used anymore. The way we release the memory is simply call the buid-in function ***free( )*** or ***delete[ ]***. However in C++ the procedure can exit anywhere. An exception can be thrown in the half way so that the code doesn't ever reach the line to release memory:
 ```c++
