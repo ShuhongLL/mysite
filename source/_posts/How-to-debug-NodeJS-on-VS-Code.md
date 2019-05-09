@@ -12,6 +12,7 @@ Here are the steps to start debug mode in VS Code:
 3. Then `launch.json` will be opened in the editor
 
 4. Replace the content of the file to be:
+<!-- more -->
 ```json
 {
 	"version": "0.2.0",
