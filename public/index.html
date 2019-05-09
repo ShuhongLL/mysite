@@ -95,33 +95,13 @@
 <li><p>Then <code>launch.json</code> will be opened in the editor</p>
 </li>
 <li><p>Replace the content of the file to be:</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">"version"</span>: <span class="string">"0.2.0"</span>,</span><br><span class="line">	<span class="attr">"configurations"</span>: [</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">			<span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">			<span class="attr">"name"</span>: <span class="string">"Launch app.js"</span>,</span><br><span class="line">			<span class="attr">"program"</span>: <span class="string">"$&#123;workspaceRoot&#125;/app.js"</span>,</span><br><span class="line">			<span class="attr">"stopOnEntry"</span>: <span class="literal">true</span>,</span><br><span class="line">			<span class="attr">"args"</span>: [</span><br><span class="line">				<span class="string">"arg1"</span>, <span class="string">"arg2"</span>, <span class="string">"arg3"</span></span><br><span class="line">			]</span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>Replace the command line arguments to whatever you need</p>
-</li>
-<li><p>Start the debugger or press <code>F5</code></p>
-</li>
-</ol>
-<p>You are all good to go!</p>
-<p>If your program reads from <strong>stdin</strong>, please add a “console” attribute to the launch config:<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">"version"</span>: <span class="string">"0.2.0"</span>,</span><br><span class="line">	<span class="attr">"configurations"</span>: [</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">			<span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">			<span class="attr">"name"</span>: <span class="string">"Launch app.js"</span>,</span><br><span class="line">			<span class="attr">"program"</span>: <span class="string">"$&#123;workspaceRoot&#125;/app.js"</span>,</span><br><span class="line">			<span class="attr">"stopOnEntry"</span>: <span class="literal">true</span>,</span><br><span class="line">			<span class="attr">"args"</span>: [</span><br><span class="line">				<span class="string">"arg1"</span>, <span class="string">"arg2"</span>, <span class="string">"arg3"</span></span><br><span class="line">			],</span><br><span class="line">			<span class="attr">"console"</span>: <span class="string">"integratedTerminal"</span></span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>If you are running the program in the <strong>terminal</strong>, you can change the content alternatively to be:<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">"version"</span>: <span class="string">"0.2.0"</span>,</span><br><span class="line">	<span class="attr">"configurations"</span>: [</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">			<span class="attr">"request"</span>: <span class="string">"attach"</span>,</span><br><span class="line">			<span class="attr">"name"</span>: <span class="string">"Attach to app.js"</span>,</span><br><span class="line">			<span class="attr">"port"</span>: <span class="string">"5858"</span></span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>The port is the <strong>debug port</strong> and it has nothing to do with your program (no matter it is a service or not). Then in the terminal, run:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --debug-brk app.js arg1 arg2 arg3...</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>The<code>--debug-brk</code> lets your program wait for the debugger to attach to. So there is no problem that it terminates before the debugger could attach.</p>
-</blockquote>
-<p>Running such command, you may encounter a problem like this:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(node:31245) [DEP0062] DeprecationWarning: `node --inspect --debug-brk` is deprecated. Please use `node --inspect-brk` instead.</span><br></pre></td></tr></table></figure></p>
-<p>As discussed in <a href="https://github.com/Microsoft/vscode/issues/32529" target="_blank" rel="noopener">microsoft github offical repository</a>, currently there is <strong>no way</strong> to prevent this happening. The reason why using <code>--inspect --debug-brk</code> is explained <a href="https://github.com/microsoft/vscode/issues/27731" target="_blank" rel="noopener">here</a>:</p>
-<blockquote>
-<p>This combination of args is the only way to enter debug mode across all node versions. At some point I’ll switch to inspect-brk if we don’t want to support node 6.x anymore, or will do version detection for it and do something for runtimeExecutable scenarios.</p>
-</blockquote>
-<blockquote>
-<p>The problem is that we do not really know what version of node a user is using, so we cannot adapt the flags we use to the node version in order to minimize the resulting deprecation warnings.</p>
-</blockquote>
-
+        
+          <a class="article-more-link" href="/2019/05/08/How-to-debug-NodeJS-on-VS-Code/">Read More...</a>
+        
       
-    </div>
+    </li></ol></div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" data-id="cjvgd8tuv0005fzaomxz79ahk" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" data-id="cjvgddhrn0005ojao5asfxhh8" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VS-Code/">VS Code</a></li></ul>
 
@@ -170,7 +150,7 @@
     <div class="article-gallery-photos">
       
         
-          <a class="article-gallery-img" href="/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" rel="gallery_cjvgd8tuq0002fzaogipq9upz">
+          <a class="article-gallery-img" href="/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" rel="gallery_cjvgddhrd0000ojao25hf01uj">
             <img src="/../images/cli.JPG" itemprop="image">
           </a>
         
@@ -190,7 +170,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" data-id="cjvgd8tuq0002fzaogipq9upz" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" data-id="cjvgddhrd0000ojao25hf01uj" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CLI/">CLI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mac-OS/">Mac OS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/port/">port</a></li></ul>
 
@@ -239,7 +219,7 @@
     <div class="article-gallery-photos">
       
         
-          <a class="article-gallery-img" href="/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" rel="gallery_cjvgd8tuw0006fzaoisofe6us">
+          <a class="article-gallery-img" href="/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" rel="gallery_cjvgddhrp0006ojaog8mq9kpz">
             <img src="/../images/Memory-Leaks.JPG" itemprop="image">
           </a>
         
@@ -256,7 +236,7 @@
       
     </p></div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" data-id="cjvgd8tuw0006fzaoisofe6us" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" data-id="cjvgddhrp0006ojaog8mq9kpz" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
@@ -305,7 +285,7 @@
     <div class="article-gallery-photos">
       
         
-          <a class="article-gallery-img" href="/2019/04/30/Prefix-Notation/" rel="gallery_cjvgd8tuy0007fzao39ptznis">
+          <a class="article-gallery-img" href="/2019/04/30/Prefix-Notation/" rel="gallery_cjvgddhrq0007ojaobnjwlv0e">
             <img src="/../images/lisp.JPG" itemprop="image">
           </a>
         
@@ -324,7 +304,7 @@
       
     </p></div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/30/Prefix-Notation/" data-id="cjvgd8tuy0007fzao39ptznis" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/04/30/Prefix-Notation/" data-id="cjvgddhrq0007ojaobnjwlv0e" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functional-Programming/">Functional Programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Lisp/">Lisp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Prefix-Notation/">Prefix Notation</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Scheme/">Scheme</a></li></ul>
 
@@ -373,7 +353,7 @@
     <div class="article-gallery-photos">
       
         
-          <a class="article-gallery-img" href="/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" rel="gallery_cjvgd8tul0000fzao61537q18">
+          <a class="article-gallery-img" href="/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" rel="gallery_cjvgddhrj0002ojaozl2oes2b">
             <img src="/../images/redux-saga.JPG" itemprop="image">
           </a>
         
@@ -390,7 +370,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="cjvgd8tul0000fzao61537q18" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="cjvgddhrj0002ojaozl2oes2b" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/">Redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Saga/">Saga</a></li></ul>
 
@@ -444,7 +424,7 @@
       
     </p></div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/27/hello-world/" data-id="cjvgd8tuz0009fzaonpdeojck" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/04/27/hello-world/" data-id="cjvgddhrr0009ojaodjlfzh2s" class="article-share-link">Share</a>
       
     </footer>
 

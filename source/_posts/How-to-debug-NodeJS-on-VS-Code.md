@@ -2,6 +2,7 @@
 title: How to debug NodeJS on VS Code
 date: 2019-05-08 11:50:53
 tags: [VS Code, NodeJS]
+photos: ["../images/vscode.JPG"]
 ---
 Here are the steps to start debug mode in VS Code:
 
