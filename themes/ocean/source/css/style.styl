@@ -44,6 +44,15 @@ a
 img
   max-width 100%
 
+pre
+  overflow scroll
+
+.article-entry code
+  background #2f3640
+  padding 0.25rem
+  border-radius 0.6rem
+  color #e6e9ed
+
 @import "_extend"
 @import "_partial/layou"
 @import "_partial/lists"
@@ -55,10 +64,11 @@ img
 @import "_partial/archive"
 @import "_partial/footer"
 @import "_partial/float"
-@import "_partial/highlight"
 @import "_partial/mobile"
 @import "_partial/pace"
 @import "_partial/gitalk.styl"
+@import "_partial/prettify.css"
+@import "tranquilheart.css"
 
 if sidebar
   @import "_partial/sidebar"

@@ -76,11 +76,11 @@ The port is the **debug port** and it has nothing to do with your program (no ma
 ```shell
 node --debug-brk app.js arg1 arg2 arg3...
 ```
->The`--debug-brk` lets your program wait for the debugger to attach to. So there is no problem that it terminates before the debugger could attach.
+>The `--debug-brk` lets your program wait for the debugger to attach to. So there is no problem that it terminates before the debugger could attach.
 
 Running such command, you may encounter a problem like this:
 ```
-(node:31245) [DEP0062] DeprecationWarning: `node --inspect --debug-brk` is deprecated. Please use `node --inspect-brk` instead.
+(node:31245) [DEP0062] DeprecationWarning: `node --inspect --debug-brk` is deprecated. Please use `node --inspect-brk` instead.     
 ```
 As discussed in [microsoft github offical repository](https://github.com/Microsoft/vscode/issues/32529), currently there is **no way** to prevent this happening. The reason why using `--inspect --debug-brk` is explained [here](https://github.com/microsoft/vscode/issues/27731):
 >This combination of args is the only way to enter debug mode across all node versions. At some point I'll switch to inspect-brk if we don't want to support node 6.x anymore, or will do version detection for it and do something for runtimeExecutable scenarios.

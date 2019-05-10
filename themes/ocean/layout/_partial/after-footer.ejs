@@ -11,3 +11,12 @@
 <% } %>
 
 <%- js('/js/ocean') %>
+<%- js('/js/prettify') %>
+<%- js('/js/ocean') %>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>

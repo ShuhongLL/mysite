@@ -74,8 +74,8 @@ If we end it up with **1!**, then simply output **1**. Then the factorial functi
 ( define ( fib n )
     ( cond ( = n 0 ) 0 )
            ( = n 1 ) 1 )
-           ( else ( + ( fib( - n 1 ) )
-                      ( fib( - n 2 ) )))))
+           ( else ( + ( fib ( - n 1 ) )
+                      ( fib ( - n 2 ) )))))
 ```
 You may find out that this procedure is not really efficient because to compute **fib( - n 1)**, **fib( - n 2)** has to be computed one more time which causes duplicated work.
 ![Tree Recursion](../images/treeRecursion.png)
@@ -100,23 +100,23 @@ For instance,
 ```
 can be written as:
 ```python
-( define add ( lambda ( a b ) ( + a b ) ) )
+( define add ( lambda ( a b ) ( + a b )))
 ```
 And operators can also be represented by ***Lambda Expression***:
 ```python
-( ( lambda ( a b ) ( + ( * a a ) ( * b b ) ) ) 2 3 )
+(( lambda ( a b ) ( + ( * a a ) ( * b b ))) 2 3 )
 ```
 Another use of ***Lambda Expression*** is creating local variables. An expression can be binded with a specific name by using keyword ***let***. The above example then can be interpreted as:
 ```python
 ( define ( sumsqr x y )
-    ( let ( a ( * x x ) )
-          ( b ( * y y ) )
-        ( + a b ) ) )
+    ( let ( a ( * x x ))
+          ( b ( * y y ))
+        ( + a b )))
 ```
 ***Note:*** The scope of a variable specified by a ***let*** is only applied to the **body** of the ***let***. For example, if the evalue of **x** is **2**, then the expression:
 ```python
-( let ( ( x 3 )
-        ( y ( + x 2 ) ) )
-    ( * x y ) )
+( let (( x 3 )
+        ( y ( + x 2 )))
+    ( * x y ))
 ```
 The value of **y** will be **4** as being outside of the **let** body, and the output will be **3 * 4 = 12**. It seems like ***let*** is really similar to ***define***; however, in the most cases, we much prefer using ***let*** and only apply ***define*** to **internal procedures**.
