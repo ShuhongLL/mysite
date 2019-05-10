@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>
-    Hello World |
+    How to Check Open TCP/IP Ports in Mac OS X |
     
     OhYoooo</title>
   
@@ -23,7 +23,7 @@
 <body>
 <main class="content">
   <section class="outer">
-  <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+  <article id="post-How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
 
   <div class="article-inner">
     
@@ -31,7 +31,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Hello World
+      How to Check Open TCP/IP Ports in Mac OS X
     </h1>
   
 
@@ -40,8 +40,8 @@
 
     
       <div class="article-meta">
-        <a href="/2019/04/27/hello-world/" class="article-date">
-  <time datetime="2019-04-27T07:51:40.239Z" itemprop="datePublished">2019-04-27</time>
+        <a href="/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" class="article-date">
+  <time datetime="2019-05-06T08:48:23.000Z" itemprop="datePublished">2019-05-06</time>
 </a>
         
       </div>
@@ -51,27 +51,52 @@
       
 
       
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/cli.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
 
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.<a id="more"></a></p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;
+        <p>The core of Mac OS is Darwin and we can use most of the CLI tools in Mac OS just like how it feels like in Linux. If we want to check out the current ports in usage, the command <strong><code>netstat</code></strong> is useful:</p>
+<pre><code>netstat -ap tcp | grep -i &quot;listen&quot;
+</code></pre><a id="more"></a>
+<p>That will print out something like this in the console:</p>
+<pre><code>Achive Internet connections(including servers)
+Proto     Recv-Q      Send-Q       Local Address       Foreign Address     (state)     
+tcp4      0           0            localhost.25035     *.*                  LISTEN
+</code></pre><p>That works but the problem is that it doesn’t show up the names of the procedures which occupy the ports. Sometimes we want to know precisely which program is exposing the port. </p>
+<p>Then found out that there is another command <strong><code>lsof</code></strong>:</p>
+<pre><code>sudo lsof -nP -iTCP:PortNumber -sTCP:LISTEN
+</code></pre><p>which prints out all the processes running in a given port with specific names:</p>
+<pre><code>COMMAND    PID    USER    FD    TYPE    DEVICE    SIZE/OFF    NODE       NAME
+syslogd    350    root    5w    VREG    222,5     0           440818     /var/adm/messages     
+syslogd    350    root    6w    VREG    222,5     339098      6248       /var/log/syslog
+cron       353    root    cwd   VDIR    222,5     512         254550     /var -- atjobs
+</code></pre><p><strong><code>-n</code></strong> : No dns (no host name)<br><strong><code>-P</code></strong> : List port number instead of its name<br><strong><code>-i</code></strong> : Lists IP sockets</p>
+<p>To view the port associated with a daemon:</p>
+<pre><code>lsof -i -n -P | grep python
+</code></pre><p>If we just want to see the name:</p>
+<pre><code>sudo lsof -i :PortNumber | grep LISTEN
+</code></pre><p>Get all running <strong>PID</strong> in a specific port:</p>
+<pre><code>sudo lsof -i :PortNumber| grep LISTEN | awk &#39;{ print $2; }&#39; | head -n 2 | grep -v PID   
+</code></pre><p>And then we can kill all the processes:</p>
+<pre><code>sudo kill -9 $(sudo lsof -i :PortNumber| grep LISTEN | awk &#39;{ print $2; }&#39; | head -n 2 | grep -v PID)   
+</code></pre><p>list all commands:</p>
+<pre><code>lsof -h
 </code></pre>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre><code class="bash">$ hexo server
-</code></pre>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre><code class="bash">$ hexo generate
-</code></pre>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre><code class="bash">$ hexo deploy
-</code></pre>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/27/hello-world/" data-id="cjvhwc82b0009c0aoqh9x7sig" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" data-id="cjvhwc81y0002c0aohzs2z20y" class="article-share-link">Share</a>
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CLI/">CLI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mac-OS/">Mac OS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/port/">port</a></li></ul>
+
     </footer>
 
   </div>
@@ -80,15 +105,20 @@
     
   <nav class="article-nav">
     
-      <a href="/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" class="article-nav-link">
+      <a href="/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" class="article-nav-link">
         <strong class="article-nav-caption">Newer posts</strong>
         <div class="article-nav-title">
           
-            A Brief Introduce to Redux Saga
+            How to debug NodeJS on VS Code
           
         </div>
       </a>
     
+    
+      <a href="/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Memory Leaks in Serveral Commonly Used Programming Languages</div>
+      </a>
     
   </nav>
 

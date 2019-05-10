@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Memory Leaks in Serveral Commonly Used Programming Languages |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Memory Leaks in Serveral Commonly Used Programming Languages
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" class="article-date">
+  <time datetime="2019-05-05T06:37:22.000Z" itemprop="datePublished">2019-05-05</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/Memory-Leaks.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <p>Usually when we talk about memory leaks we are actually talking about the memory leaks in heap memory. When an object is initialized, it will be dynamically allocated to a piece of memory in the heap and ready to be manipulated. After we perform some operations and the whole procedure is finished, the object stored in heap should also be erased; however in the case of memory leak, that piece of memory is not released but still held in the heap, marked as occupied but no reference refers to it.<a id="more"></a></p>
+<p>Wiki’s Def:</p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Memory_leak" target="_blank" rel="noopener"><strong>Memory leak</strong></a> is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that: </p>
+<ul>
+<li>memory which is no longer needed is not released</li>
+<li>an object is stored in memory but cannot be accessed by the running code</li>
+</ul>
+</blockquote>
+<p>We usually encounter this issue in programming languages that don’t have <a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science" target="_blank" rel="noopener"><strong>GC</strong></a>, for example C++ and C. For such languages, we have to manage the memory by ourselves which, if not done properly, will expose the risks of memory leaks.<br><br></p>
+<h2 id="This-is-really-common-in-C"><a href="#This-is-really-common-in-C" class="headerlink" title="This is really common in C++"></a>This is really common in C++</h2><p>Let’s take a look in C++. There are literally hundreds of ways that can cause memory leaks and most of them won’t be detected during compilation and even in runtime. Only a few leaks will not have any impact on the system; however if we are running a huge application and those leaks accumulate, that will significantly reduce the real runtime performance of the whole system.</p>
+<p>We all know that when we allocate an object, we have to release the memory if this object is not used anymore. The way we release the memory is simply call the buid-in function <strong><em>free( )</em></strong> or <strong><em>delete[ ]</em></strong>. However in C++ the procedure can exit anywhere. An exception can be thrown in the half way so that the code doesn’t ever reach the line to release memory:</p>
+<pre><code class="c++">int sample(int n) {
+    void  *ptr = malloc(16);
+    if (n)
+        return -1; //memory leak here
+    free(ptr);
+    return 0;
+}
+</code></pre>
+<p>or:</p>
+<pre><code class="c++">class Sample {
+    public:
+        init() { int *n = new int;  throw any_exception(); }
+        ~init() { delete n; }
+    private:
+        int *n;
+};
+Sample *n = new Sample; //memory leak here
+</code></pre>
+<p>The solution to the above examples is also really simple: check control flows and <strong>do remember to call the destructor before anywhere the procedure may exit</strong>. Well if you want to do it in a fancy way, you can use <strong><em>smart pointer</em></strong> alternatively:</p>
+<pre><code class="c++">class Sample {
+    public:
+        init() { n = std::make_shared&lt;int&gt;(new int) }
+        ~init() {}
+    private:
+        std::shared_ptr&lt;int&gt; n;
+};
+</code></pre>
+<p>Smart pointer helps you manage this object and if it is not referred anymore, release its memory.<br><br></p>
+<h2 id="free-delete-is-not-enough"><a href="#free-delete-is-not-enough" class="headerlink" title="free( )/delete is not enough"></a>free( )/delete is not enough</h2><p>Now your program has such a concrete control flow that <strong>free( )</strong> or <strong>delete</strong> is called before all the possible drop out. That is great but still not enough. <strong>free( )</strong> and <strong>delete</strong> can <strong>only release the memory where the pointer is currently pointing to but not the pointer itself!</strong> The pointer will still point to the original memory address but the content has been already removed. In this circumstance, the value of the pointer does not equal to <strong>NULL</strong>, instead some random values that cannot be predicted.</p>
+<pre><code class="c++">int main() {
+    char *p = (char*) malloc(sizeof(char) * 100);
+    strcpy(p, &quot;hello&quot;);
+    free(p);
+    if (p != NULL) //doesn&#39;t prevent issue
+        strcpy(p, &quot;world&quot;); // error
+}
+</code></pre>
+<p>This pointer p is called <a href="https://en.wikipedia.org/wiki/Dangling_pointer" target="_blank" rel="noopener"><strong><em>dangling pointer</em></strong> or <strong><em>wild pointer</em></strong></a> and will only be erased after the whole procedure is finished or terminated. The wild pointer is really risky because of its random behavior. Imagine there is something in your room that sometimes can be observed sometimes cannot, randomly breaks your stuff but never leaves footprint. In programming it is called <strong><em>wild pointer</em></strong>, and in real life it is called <a href="https://en.wikipedia.org/wiki/Cat" target="_blank" rel="noopener"><strong>cat</strong></a>. To prevent it, we should <strong>always set the pointer to be NULL when it is not used/the memory is released</strong>.</p>
+<p><strong><em>Note</em></strong>: when you define a pointer without setting up its initial value, that pointer will also be a <strong><em>wild pointer</em></strong> and has a value of some random number (which doesn’t equal to <strong>NULL</strong>). Hence it is necessary to set the value of a pointer to be <strong>NULL</strong> if it cannot be asigned a value at the beginning.</p>
+<p>For some simple pointers, they can be reasigned to <strong>NULL</strong> to prevent <strong><em>wild pointer</em></strong>, however for a pointer referring to a hierarchical object, simply setting to <strong>NULL</strong> cannot resolve the potential issues. For example, you are using a <strong><em>vector</em></strong> in C++ :</p>
+<pre><code class="c++">vector &lt;string&gt; v
+int main() {
+    for (int i=0; i&lt;1000000; i++)
+        v.push_back(&quot;test&quot;);
+
+    cout &lt;&lt; v.capacity() &lt;&lt; endl;  //memory usage: 54M
+    v.clear();
+    cout &lt;&lt; v.capacity() &lt;&lt; endl;  //memory usage: still 54M
+}
+</code></pre>
+<p>Even though we have cleared the vector and all its elements were indeed released, the capacity of the vector is still unchanged. <strong>clear( )</strong> removed all its element but cannot shrink the size of the container. The same thing happens to other containers such as <strong>deque</strong>. To handle this, before <strong>C++ 11</strong>, we can swap the pointers:</p>
+<pre><code class="c++">int main() {
+    ...
+    v.clear();
+    vector&lt;string&gt;(v).swap(v); //new a vector with the same content and swap    
+    cout &lt;&lt; v.capacity() &lt;&lt; endl;  //memory usage: 0
+}
+</code></pre>
+<p>after C++ 11, it provides function <strong>shrink_to_fit( )</strong> to remove the extra allocated memory.<br><br></p>
+<h2 id="GC-doesn’t-avoid-memory-leaks"><a href="#GC-doesn’t-avoid-memory-leaks" class="headerlink" title="GC doesn’t avoid memory leaks"></a>GC doesn’t avoid memory leaks</h2><p>It’s not suprising that GC can prevent most cases of memory leaks because it is runnig in an individual thread, checking the memory regularly and removing the unreferred objects. It is so powerful that porgrammers rarely pay attention to memory management and be aware of the memory leaks. <strong>Java</strong> is such language which has powerful and unruly GC that can be hardly controlled (call <strong>System.gc( )</strong> doesn’t certainly invoke GC). It helps to manage the memory in jvm, but it cannot avoid memory leaks.</p>
+<p>There are mainly two cases that can lead to memory leaks in Java. One is the object which has a longer lifecycle keeps a reference to another object which has a shorter lifecycle:</p>
+<pre><code class="java">public class Sample {
+    Object object;
+    public void anymethod(){
+        object = new Object();
+        ...
+    }
+    ...
+}
+</code></pre>
+<p>If <strong><em>object</em></strong> is only used inside <strong><em>anymethod( )</em></strong>, then after stack pops <strong><em>anymethod( )</em></strong>, the lifecycle of <strong><em>object</em></strong> should also be ended. But for here, because class <strong><em>Sample</em></strong> is still proceeding and keeps the reference of <strong><em>object</em></strong>, <strong><em>object</em></strong> cannot be collected by GC and hence leaks the memory. The solution will be either init <strong><em>object</em></strong> inside <strong><em>anymethod( )</em></strong> (as a local varible) or set <strong><em>object</em></strong> to be <strong><em>null</em></strong> after <strong><em>anymethod</em></strong> is finished.</p>
+<p>Another case is the use of <strong><em>HashSet</em></strong>. <strong><em>HashSet</em></strong> is the implementation of hash-table and it stores elements according to their different hash values. In order to push and withdraw the same object in the <strong><em>HashSet</em></strong>, we need to override the method <strong><em>HashCode( )</em></strong> so that the same object has the same hash vaule and being stored in the same place in <strong><em>HashSet</em></strong>. However, if we push something into the <strong><em>HashSet</em></strong> and then change some properties of this object (those properties are most likely to be used to calculate the hashcode), the hashcode of this object may vary and when we refer this object back to our <strong><em>HashSet</em></strong> to do some operations, for example delete this object from the <strong><em>HashSet</em></strong>, this object might not be found in the set and hence cannot be deleted:</p>
+<pre><code class="java">    HashSet&lt;Obejct&gt; set = new HashSet&lt;Object&gt;();
+    Object something = new Object();
+    set.add(something);
+    something.doSomethingChanges();
+    set.contains(something);  //this may return false
+    set.remove(something);  //&#39;something&#39; cannot be removed if the previous line returns false      
+</code></pre>
+<p><br></p>
+<h2 id="Python"><a href="#Python" class="headerlink" title="Python"></a>Python</h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/05/05/Memory-Leak-in-Serveral-Commonly-Used-Programming-Languages/" data-id="cjvhwc8250006c0ao5dn9rusn" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+      <a href="/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" class="article-nav-link">
+        <strong class="article-nav-caption">Newer posts</strong>
+        <div class="article-nav-title">
+          
+            How to Check Open TCP/IP Ports in Mac OS X
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2019/04/30/Prefix-Notation/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Prefix Notation</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

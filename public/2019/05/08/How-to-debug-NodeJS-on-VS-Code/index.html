@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    How to debug NodeJS on VS Code |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-How-to-debug-NodeJS-on-VS-Code" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      How to debug NodeJS on VS Code
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" class="article-date">
+  <time datetime="2019-05-08T02:50:53.000Z" itemprop="datePublished">2019-05-08</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/vscode.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <p>Here are the steps to start debug mode in VS Code:</p>
+<ol>
+<li><p>On the left side bar, click “debug” icon to switch to debug viewlet</p>
+</li>
+<li><p>On the top left, click the gear icon</p>
+</li>
+<li><p>Then <code>launch.json</code> will be opened in the editor</p>
+</li>
+<li><p>Replace the content of the file to be:</p>
+<a id="more"></a>
+<pre><code class="json">{
+ &quot;version&quot;: &quot;0.2.0&quot;,
+ &quot;configurations&quot;: [
+     {
+         &quot;type&quot;: &quot;node&quot;,
+         &quot;request&quot;: &quot;launch&quot;,
+         &quot;name&quot;: &quot;Launch app.js&quot;,
+         &quot;program&quot;: &quot;${workspaceRoot}/app.js&quot;,
+         &quot;stopOnEntry&quot;: true,
+         &quot;args&quot;: [
+             &quot;arg1&quot;, &quot;arg2&quot;, &quot;arg3&quot;
+         ]
+     }
+ ]
+}
+</code></pre>
+</li>
+<li><p>Replace the command line arguments to whatever you need</p>
+</li>
+<li><p>Start the debugger or press <code>F5</code></p>
+</li>
+</ol>
+<p>You are all good to go!</p>
+<p>If your program reads from <strong>stdin</strong>, please add a “console” attribute to the launch config:</p>
+<pre><code class="json">{
+    &quot;version&quot;: &quot;0.2.0&quot;,
+    &quot;configurations&quot;: [
+        {
+            &quot;type&quot;: &quot;node&quot;,
+            &quot;request&quot;: &quot;launch&quot;,
+            &quot;name&quot;: &quot;Launch app.js&quot;,
+            &quot;program&quot;: &quot;${workspaceRoot}/app.js&quot;,
+            &quot;stopOnEntry&quot;: true,
+            &quot;args&quot;: [
+                &quot;arg1&quot;, &quot;arg2&quot;, &quot;arg3&quot;
+            ],
+            &quot;console&quot;: &quot;integratedTerminal&quot;
+        }
+    ]
+}
+</code></pre>
+<p>If you are running the program in the <strong>terminal</strong>, you can change the content alternatively to be:</p>
+<pre><code class="json">{
+    &quot;version&quot;: &quot;0.2.0&quot;,
+    &quot;configurations&quot;: [
+        {
+            &quot;type&quot;: &quot;node&quot;,
+            &quot;request&quot;: &quot;attach&quot;,
+            &quot;name&quot;: &quot;Attach to app.js&quot;,
+            &quot;port&quot;: &quot;5858&quot;
+        }
+    ]
+}
+</code></pre>
+<p>The port is the <strong>debug port</strong> and it has nothing to do with your program (no matter it is a service or not). Then in the terminal, run:</p>
+<pre><code class="shell">node --debug-brk app.js arg1 arg2 arg3...
+</code></pre>
+<blockquote>
+<p>The <code>--debug-brk</code> lets your program wait for the debugger to attach to. So there is no problem that it terminates before the debugger could attach.</p>
+</blockquote>
+<p>Running such command, you may encounter a problem like this:</p>
+<pre><code>(node:31245) [DEP0062] DeprecationWarning: `node --inspect --debug-brk` is deprecated. Please use `node --inspect-brk` instead.     
+</code></pre><p>As discussed in <a href="https://github.com/Microsoft/vscode/issues/32529" target="_blank" rel="noopener">microsoft github offical repository</a>, currently there is <strong>no way</strong> to prevent this happening. The reason why using <code>--inspect --debug-brk</code> is explained <a href="https://github.com/microsoft/vscode/issues/27731" target="_blank" rel="noopener">here</a>:</p>
+<blockquote>
+<p>This combination of args is the only way to enter debug mode across all node versions. At some point I’ll switch to inspect-brk if we don’t want to support node 6.x anymore, or will do version detection for it and do something for runtimeExecutable scenarios.</p>
+</blockquote>
+<blockquote>
+<p>The problem is that we do not really know what version of node a user is using, so we cannot adapt the flags we use to the node version in order to minimize the resulting deprecation warnings.</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" data-id="cjvhwc8230005c0aoihm6d330" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VS-Code/">VS Code</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/05/06/How-to-Check-Open-TCP-IP-Ports-in-Mac-OS-X/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">How to Check Open TCP/IP Ports in Mac OS X</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

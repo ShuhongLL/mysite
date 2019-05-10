@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    A Brief Introduce to Redux Saga |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-A-Brief-Introduce-to-Redux-Saga" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      A Brief Introduce to Redux Saga
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" class="article-date">
+  <time datetime="2019-04-28T05:35:50.000Z" itemprop="datePublished">2019-04-28</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/redux-saga.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <p>If you are quite experienced with redux, which is a predictable state container for JavaScript applications (<strong>Note:</strong> even thouth React and Redux is a popular combination to build fast and powerful apps, Redux is not necessarily combined with React), you are definitely feeling comfortable with its powerful store which manages all the global states and provides much cleaner logic flows to change them. If you are new to redux, <a href="https://redux.js.org/introduction/getting-started" target="_blank" rel="noopener">here</a> is the guide to dive before we start our topic.<a id="more"></a></p>
+<p>In a complex javascript application, asynchronous function is always one of the most annoying part where encounters tons of bugs. If not handle them properly, the app usually ends up with <strong><em>call back hell</em></strong>.<br><br></p>
+<h2 id="Haven’t-heard-of-CallBack-Hell"><a href="#Haven’t-heard-of-CallBack-Hell" class="headerlink" title="Haven’t heard of CallBack Hell?"></a><strong>Haven’t heard of <em>CallBack Hell</em>?</strong></h2><p>Well, in javascript, the only way you can suspend a computation and have the rest operations doing later is to put the rest operations into a callback function. This callback function usually returns a <strong><em>Promise</em></strong> (And has a type of <strong><em>Promise&lt;\any&gt;</em></strong>). In order to easily mark those async functions, after <strong><em>ES6</em></strong> javascript provides extra modifiers <strong><em>async</em></strong> and <strong><em>await</em></strong>, which actually wraps up the original utilities of promise and makes it more readable to programmers. Hummm, sounds like things are going better… <del><strong>NO!! It doesn’t resolve anything!</strong></del> The core problem leads to a callback hell is the hierarchical async calls, for example</p>
+<p>you have some simple synchronous functions which are in a chain to accomplish some logics:</p>
+<pre><code class="javascript">a = getSomething();
+b = getMore(a);
+c = getMoreAndMore(b);
+...
+</code></pre>
+<p>It looks fine for now, but what if they all turn out to be async? Then you have to follow the callback style to make them operate one right after another is done:</p>
+<pre><code class="javascript">getSomthing(function(a) {
+    getMore(a, function(b) {
+        getMoreAndMore(b, function(c) {
+            //keep going...
+        });
+    });
+});
+</code></pre>
+<p>Or you prefer <strong><em>ES6</em></strong>:</p>
+<pre><code class="javascript">async function getSomething(a) {
+    await b = ToDo(a);
+    return await getMore((b) =&gt; {
+        return await ToDo(b);
+    }).then((c) =&gt; {
+        return await ToDo(c);
+    }).then(...);
+}
+</code></pre>
+<p>Looks really confused? This will getting even uglier if we are using callbacks in loops.<br><br></p>
+<h2 id="Redux-Thunks"><a href="#Redux-Thunks" class="headerlink" title="Redux Thunks"></a>Redux Thunks</h2><p>Back to our redux app, we usually want to update some states after an async call to inform the UI that the data is ready to be fetched. That is always achieved by dispatching an action from the component to the reducer:</p>
+<pre><code class="javascript">async const callAPI = () =&gt; {
+    ...
+    return response;
+};
+...
+async const updateUI = (...params) =&gt; {
+    const res = await callAPI();
+    if (res.status === 200)
+        dispatch({type: &quot;UPDATE&quot;, isSuccess: true});
+};
+...
+render({
+    ...
+    this.props.isSuccess?
+        showData() : showError()
+});
+</code></pre>
+<p>This isn’t bad, but we are always looking for something better. An advanced way to rewrite it is using redux middleware. <strong><em>Middleware</em></strong> is somewhere you can put the code after the framework receives a request and before it generates a response. For example, we want to add a logger in the redux store so that when the store catches an action, before it returns the new state, the logger can log the previous state and the new generated state. This is what can be added as a middleware:</p>
+<pre><code class="javascript">function logger(store) {
+    return function wrapDispatch (next) {
+        return function dispatchAndLog (action) {
+            console.log(&quot;dispatching.. &quot;, action);
+            let result = next(action);
+            console.log(&quot;new state&quot;, store.getState());
+            return result;
+        }
+    }
+}
+</code></pre>
+<p>There are more advanced ways to add a logger. If you are interested, please refer to the <a href="https://redux.js.org/advanced/middleware" target="_blank" rel="noopener">offical documentation</a>. With our middleware, the previous example can be written in a cleaner way:</p>
+<pre><code class="javascript">const callAPI = () =&gt; {
+    return((dispatch) =&gt; {
+        dispatch(startCallingApiAction);
+        actualCallApi().then(data =&gt; {
+            dispatch(successAction(data));
+        }).fail(err =&gt; {
+            dispatch(failedAction(err));
+        });
+    });
+};
+</code></pre>
+<p>The successful response data is wrapped in the payload of the action, sent to the reducer. Once the store updates the data, it will be mapped as a prop back to the component and request for a rerender. This middleware is also called <strong><em>thunk</em></strong>. By applying thunk to decouple the presentation layer, we can get rid of most of the side effects in components, instead, managing and orchestrating side effects in thunks.</p>
+<p>This is great, so why are we even considering <strong><em>saga</em></strong>? Well, one of the advantages of middleware is that it can be chained. Every middleware mounted in redux store starts an individual thread (or something really looks like a thread in <strong><em>NodeJS</em></strong>). When a middleware captures an action and handles its side effect, it can dispatch a new action to another middleware to do nested logics. This behavior of middleware indicates that thunks can be chained as well, for example thunkA forwards its return payload to thunkB and thunkB forwards its return payload to… <strong>Wait! That sounds quite familiar!! Is that the case of callback hell??</strong> Unfortunately, a good thing plus another good feature doesn’t always end up with something better. <del>It could be some shit as well (笑)</del> In this case, true, this is exactly the callback hell.<br><br></p>
+<h2 id="Redux-Saga"><a href="#Redux-Saga" class="headerlink" title="Redux Saga"></a>Redux Saga</h2><p>To handle the possible endless callback functions and also to make it more easily to test in a component which has complicated logics, we need to change our previous thoughts. Just like shifting from Process Oriented Programming to Object Oriented Programming, instead of telling the application how to handle the side effects, suppose it already knows how to call a function and how to dispatch an action, all we need to do is to <strong>give instructions about what to do next</strong> and we don’t care about how those instructions will be executed (Saga handles the executions).</p>
+<p>Then the thunks example can be changed as following:</p>
+<pre><code class="javascript">export function* apiSideEffect(action) {
+    try{
+        const data = yield call(actualCallApi);
+        yield put({ type:&quot;SUCCESS&quot;, payload: data });
+    } catch(err) {
+        yield put({ type:&quot;FAILED&quot;, payload: err });
+    }
+}
+
+export function* apiSaga() {
+    yield takeEvery(&quot;CLICK_TO_CALL_API&quot;, apiSideEffect);
+}
+</code></pre>
+<p>There are serval fucntions already being integrated in Saga:</p>
+<blockquote>
+<p><strong><em>Call:</em></strong> the method call will return only a plain object describing the operation so redux-saga can take care of the invocation and returns the result to the generator. The first parameter is the generator function ready to be called and the rest params are all the arguments in the generator.</p>
+</blockquote>
+<blockquote>
+<p><strong><em>Put:</em></strong> Instead of dispatching an action inside the generator (Don’t ever ever do that), <strong><em>put</em></strong> Returns an object with instructions for the middleware to dispatch the action.</p>
+</blockquote>
+<blockquote>
+<p><strong><em>Select:</em></strong> Returns value from the selector function, similar with <strong>getState( )</strong>. <strong><em>Note:</em></strong> It is not recommended to use this function because it returns the value corresponding to the contents of the store state tree, which is most likely a plain Javascript object and is <strong>mutable</strong> (Redux wants you to handle state immutably, which means return a new state instead of changing the old one).</p>
+</blockquote>
+<blockquote>
+<p><strong><em>Take:</em></strong> It creates a command object that tells the middleware to wait for a specific action. The resulting behavior of the call Effect is the same as when the middleware suspends the generator until a <strong><em>promise</em></strong> resolves. In the take case, it’ll suspend the generator until a matching action is dispatched</p>
+</blockquote>
+<p>By working with Saga, we make the side effects to be <strong><em>declarative</em></strong> rather than <strong><em>imperative</em></strong>.</p>
+<blockquote>
+<p><strong><em>Declarative:</em></strong> describing what the program must accomplish, rather than describe how to accomplish it</p>
+</blockquote>
+<blockquote>
+<p><strong><em>Imperative:</em></strong> consists of commands for the computer to perform, focuses on describing how a program operates</p>
+</blockquote>
+<p>In the case of take, the control is inverted. Instead of the actions being pushed to the handler tasks, the <strong>Saga is pulling the action by itself</strong>. An additional generator, known as <strong><em>watcher</em></strong> which contains <strong><em>take</em></strong> has to be created to watch a specific action and being triggered once the following action is dispatched in the application. There are two ways to create a watcher, one is using the buid-in functions (<strong><em>Saga Helper</em></strong>):</p>
+<pre><code class="javascript">function* watchFetchData() {
+    yield takeEvery(&quot;FETCH_REQUEST&quot;, callFetchDataApi);
+}
+</code></pre>
+<p><strong><em>takeEvery</em></strong> allows multiple request to be proceeding at the same time. Or if you just want the latest request to be fired (the older one will be overrided during each time the watcher is triggered</p>
+<pre><code class="javascript">function* watchFetchData() {
+    yield takeLatest(&quot;FETCH_REQUEST&quot;, callFetchDataApi);
+}
+</code></pre>
+<p>However by using <strong><em>take</em></strong>, it is possible to fully control an action observation process to build complex control flow:</p>
+<pre><code class="javascript">function* watchFetchData() {
+    while(true) {
+        const action = yield take(&quot;FETCH_REQUEST&quot;);
+        console.log(action);
+        yield call(callFetchDataApi, action.payload);
+    }
+}
+</code></pre>
+<p>All right, now you have been exposed to everything you need to know before start trying redux saga on your own. Here is a short overall example that may also help:<br>Store:</p>
+<pre><code class="javascript">const sagaMiddleware = createSagaMiddleware();
+const store = createStore(rootReducer, appluMiddleware(sagaMiddleware));    
+sagaMiddleware.run(watchFetch);
+</code></pre>
+<p>Sagas:</p>
+<pre><code class="javascript">function* watchFetch(): Generator&lt;*, *, *&gt; {
+    yield takeEvery(&quot;FETCH_ACTION&quot;, callFetchAPI);
+}
+
+function* callFetchAPI(): Generator&lt;*, *, *&gt; {
+    try {
+        yield put({ type: &quot;FETCHING&quot;, payload: ... });
+        const data = yield call(actualCallApi);
+        yield put({ type: &quot;FETCH_SUCCESS&quot;, payload: data });
+    } catch(err) {
+        yield put({ type: &quot;FETCH_FAILED&quot;, payload: err });
+    }
+}
+</code></pre>
+<p>Reducer:</p>
+<pre><code class="javascript">const reducer = (state = initState, action) =&gt; {
+    switch(action) {
+        case &quot;FETCHING&quot;:
+            return { loading: true, ...state };
+        case &quot;FETCH_SUCCESS&quot;:
+            return { loading: false, success: true, data: action.payload, ...state };   
+        case &quot;FETCH_FAILED&quot;:
+            return { loading: false, success: false, error: true, ...state };
+        default:
+            return { ...state };
+    }
+};
+</code></pre>
+<p>Component:</p>
+<pre><code class="javascript">class myComponent extends React.Component {
+    const mapStateToProps = ...
+    const mapDispatchToProps = ...
+    render() {
+        return (
+            &lt;button onClick = { () =&gt; this.props.dispatch({type: &quot;FETCH_ACTION&quot;}) }/&gt;   
+            {
+                this.props.loading?
+                    &lt;p&gt;Loading..&lt;/p&gt; : this.props.error?
+                        &lt;p&gt;Error!&lt;/p&gt; : &lt;p&gt;{this.props.data}&lt;/p&gt;
+            }
+        );
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
+
+</code></pre>
+<p>For more advanced concepts, there is a well-organized <a href="https://redux-saga.js.org/docs/advanced/" target="_blank" rel="noopener">Saga offical documentation</a> you can refer to if you want to dive deeper.<br><br></p>
+<h2 id="How-to-test-Saga"><a href="#How-to-test-Saga" class="headerlink" title="How to test Saga?"></a>How to test Saga?</h2><p>A function that returns a simple object is easier to test than a function that directly makes an asynchronous call. For redux saga, each time you yield a function call will return a plain javascript object which makes the workflow much easier to test. You don’t need to use the real API, fake it, or mock it, instead just iterating over the generator function, asserting for equality on the values yielded.</p>
+<pre><code class="javascript">describe(&quot;fetch work flow&quot;, () =&gt; {
+    const generator = cloneableGenerator(callFetchAPI)({ type: &quot;FETCH_ACTION&quot; });
+    expect(generator.next().value).toEqual(put({ type: &quot;FETCHING&quot;, payload: ... }));    
+
+    test(&quot;fetch success&quot;, () =&gt; {
+        const clone = generator.clone();
+        expect(clone.next().value).toEqual(put({ type: &quot;FETCH_SUCCESS&quot; }));
+        expect(generator.next().done).toEqual(true);
+    });
+});
+</code></pre>
+<p>In the above example, we use <strong>clone( )</strong> to test different control flows and <strong>next( )</strong> to iterate to the next function ready be yielded. The mock return value can also be injected as an argument of <strong>next( )</strong>:</p>
+<pre><code class="javascript">expect(clone.next(false).value).toEqual( put(fetchFailedAction()) );      
+</code></pre>
+<p><br></p>
+<h2 id="Saga-vs-Observables"><a href="#Saga-vs-Observables" class="headerlink" title="Saga vs Observables"></a>Saga vs Observables</h2><p>Redux saga is not the only solution to our apps which may have complex control flows, they are other helpful tools providing different trade-offs which can also resolve the async problems. Here are some good <a href="https://hackmd.io/s/H1xLHUQ8e" target="_blank" rel="noopener">code snippets</a> of saga vs observables that can open your mind :D</p>
+<p><br><br><br></p>
+<h2 id="References"><a href="#References" class="headerlink" title="References:"></a>References:</h2><p><a href="https://redux-saga.js.org/" target="_blank" rel="noopener">https://redux-saga.js.org/</a><br><a href="https://stackoverflow.com/questions/25098066/what-is-callback-hell-and-how-and-why-rx-solves-it" target="_blank" rel="noopener">https://stackoverflow.com/questions/25098066/what-is-callback-hell-and-how-and-why-rx-solves-it</a><br><a href="https://redux.js.org/advanced/middleware" target="_blank" rel="noopener">https://redux.js.org/advanced/middleware</a><br><a href="https://pub.dartlang.org/packages/redux_thunk" target="_blank" rel="noopener">https://pub.dartlang.org/packages/redux_thunk</a><br><a href="https://codeburst.io/how-i-test-redux-saga-fcc425cda018" target="_blank" rel="noopener">https://codeburst.io/how-i-test-redux-saga-fcc425cda018</a><br><a href="https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1" target="_blank" rel="noopener">https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1</a><br><a href="https://www.sitepoint.com/redux-without-react-state-management-vanilla-javascript/" target="_blank" rel="noopener">https://www.sitepoint.com/redux-without-react-state-management-vanilla-javascript/</a><br><a href="https://redux.js.org/introduction/getting-started" target="_blank" rel="noopener">https://redux.js.org/introduction/getting-started</a><br><a href="https://blog.logrocket.com/understanding-redux-saga-from-action-creators-to-sagas-2587298b5e71" target="_blank" rel="noopener">https://blog.logrocket.com/understanding-redux-saga-from-action-creators-to-sagas-2587298b5e71</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="cjvhwc81u0000c0ao4bxgbwze" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/">Redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Saga/">Saga</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+      <a href="/2019/04/30/Prefix-Notation/" class="article-nav-link">
+        <strong class="article-nav-caption">Newer posts</strong>
+        <div class="article-nav-title">
+          
+            Prefix Notation
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2019/04/27/hello-world/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Hello World</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
