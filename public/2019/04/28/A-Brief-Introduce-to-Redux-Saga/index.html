@@ -65,7 +65,7 @@
       
         <p>If you are quite experienced with redux, which is a predictable state container for JavaScript applications (<strong>Note:</strong> even thouth React and Redux is a popular combination to build fast and powerful apps, Redux is not necessarily combined with React), you are definitely feeling comfortable with its powerful store which manages all the global states and provides much cleaner logic flows to change them. If you are new to redux, <a href="https://redux.js.org/introduction/getting-started" target="_blank" rel="noopener">here</a> is the guide to dive before we start our topic.<a id="more"></a></p>
 <p>In a complex javascript application, asynchronous function is always one of the most annoying part where encounters tons of bugs. If not handle them properly, the app usually ends up with <strong><em>call back hell</em></strong>.<br><br></p>
-<h2 id="Haven’t-heard-of-CallBack-Hell"><a href="#Haven’t-heard-of-CallBack-Hell" class="headerlink" title="Haven’t heard of CallBack Hell?"></a><strong>Haven’t heard of <em>CallBack Hell</em>?</strong></h2><p>Well, in javascript, the only way you can suspend a computation and have the rest operations doing later is to put the rest operations into a callback function. This callback function usually returns a <strong><em>Promise</em></strong> (And has a type of <strong><em>Promise&lt;\any&gt;</em></strong>). In order to easily mark those async functions, after <strong><em>ES6</em></strong> javascript provides extra modifiers <strong><em>async</em></strong> and <strong><em>await</em></strong>, which actually wraps up the original utilities of promise and makes it more readable to programmers. Hummm, sounds like things are going better… <del><strong>NO!! It doesn’t resolve anything!</strong></del> The core problem leads to a callback hell is the hierarchical async calls, for example</p>
+<h2 id="Haven’t-heard-of-CallBack-Hell"><a href="#Haven’t-heard-of-CallBack-Hell" class="headerlink" title="Haven’t heard of CallBack Hell?"></a><strong>Haven’t heard of <em>CallBack Hell</em>?</strong></h2><p>Well, in javascript, the only way you can suspend a computation and have the rest operations doing later is to put the rest operations into a callback function. This callback function usually returns a <strong><code>Promise</code></strong> (And has a type of <strong><code>Promise&lt;any&gt;</code></strong>). In order to easily mark those async functions, after <strong><em>ES6</em></strong> javascript provides extra modifiers <strong><code>async</code></strong> and <strong><code>await</code></strong>, which actually wraps up the original utilities of promise and makes it more readable to programmers. Hummm, sounds like things are going better… <del><strong>NO!! It doesn’t resolve anything!</strong></del> The core problem leads to a callback hell is the hierarchical async calls, for example</p>
 <p>you have some simple synchronous functions which are in a chain to accomplish some logics:</p>
 <pre><code class="javascript">a = getSomething();
 b = getMore(a);
@@ -153,16 +153,16 @@ export function* apiSaga() {
 </code></pre>
 <p>There are serval fucntions already being integrated in Saga:</p>
 <blockquote>
-<p><strong><em>Call:</em></strong> the method call will return only a plain object describing the operation so redux-saga can take care of the invocation and returns the result to the generator. The first parameter is the generator function ready to be called and the rest params are all the arguments in the generator.</p>
+<p><strong><code>Call</code></strong>: the method call will return only a plain object describing the operation so redux-saga can take care of the invocation and returns the result to the generator. The first parameter is the generator function ready to be called and the rest params are all the arguments in the generator.</p>
 </blockquote>
 <blockquote>
-<p><strong><em>Put:</em></strong> Instead of dispatching an action inside the generator (Don’t ever ever do that), <strong><em>put</em></strong> Returns an object with instructions for the middleware to dispatch the action.</p>
+<p><strong><code>Put</code></strong>: Instead of dispatching an action inside the generator (Don’t ever ever do that), <strong><em>put</em></strong> Returns an object with instructions for the middleware to dispatch the action.</p>
 </blockquote>
 <blockquote>
-<p><strong><em>Select:</em></strong> Returns value from the selector function, similar with <strong>getState( )</strong>. <strong><em>Note:</em></strong> It is not recommended to use this function because it returns the value corresponding to the contents of the store state tree, which is most likely a plain Javascript object and is <strong>mutable</strong> (Redux wants you to handle state immutably, which means return a new state instead of changing the old one).</p>
+<p><strong><code>Select</code></strong>: Returns value from the selector function, similar with <strong><code>getState()</code></strong>. <strong><em>Note:</em></strong> It is not recommended to use this function because it returns the value corresponding to the contents of the store state tree, which is most likely a plain Javascript object and is <strong>mutable</strong> (Redux wants you to handle state immutably, which means return a new state instead of changing the old one).</p>
 </blockquote>
 <blockquote>
-<p><strong><em>Take:</em></strong> It creates a command object that tells the middleware to wait for a specific action. The resulting behavior of the call Effect is the same as when the middleware suspends the generator until a <strong><em>promise</em></strong> resolves. In the take case, it’ll suspend the generator until a matching action is dispatched</p>
+<p><strong><code>Take</code></strong>: It creates a command object that tells the middleware to wait for a specific action. The resulting behavior of the call Effect is the same as when the middleware suspends the generator until a <strong><em>promise</em></strong> resolves. In the take case, it’ll suspend the generator until a matching action is dispatched</p>
 </blockquote>
 <p>By working with Saga, we make the side effects to be <strong><em>declarative</em></strong> rather than <strong><em>imperative</em></strong>.</p>
 <blockquote>
@@ -255,7 +255,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
     });
 });
 </code></pre>
-<p>In the above example, we use <strong>clone( )</strong> to test different control flows and <strong>next( )</strong> to iterate to the next function ready be yielded. The mock return value can also be injected as an argument of <strong>next( )</strong>:</p>
+<p>In the above example, we use <strong><code>clone()</code></strong> to test different control flows and <strong><code>next()</code></strong> to iterate to the next function ready be yielded. The mock return value can also be injected as an argument of <strong><code>next()</code></strong>:</p>
 <pre><code class="javascript">expect(clone.next(false).value).toEqual( put(fetchFailedAction()) );      
 </code></pre>
 <p><br></p>
@@ -266,7 +266,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="cjvhwc81u0000c0ao4bxgbwze" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="cjvhx9ndh0002kqaov7cg3mtq" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/">Redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Saga/">Saga</a></li></ul>
 

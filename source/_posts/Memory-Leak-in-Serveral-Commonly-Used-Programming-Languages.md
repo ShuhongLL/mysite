@@ -17,7 +17,7 @@ We usually encounter this issue in programming languages that don't have [**GC**
 ## This is really common in C++
 Let's take a look in C++. There are literally hundreds of ways that can cause memory leaks and most of them won't be detected during compilation and even in runtime. Only a few leaks will not have any impact on the system; however if we are running a huge application and those leaks accumulate, that will significantly reduce the real runtime performance of the whole system.
 
-We all know that when we allocate an object, we have to release the memory if this object is not used anymore. The way we release the memory is simply call the buid-in function ***free( )*** or ***delete[ ]***. However in C++ the procedure can exit anywhere. An exception can be thrown in the half way so that the code doesn't ever reach the line to release memory:
+We all know that when we allocate an object, we have to release the memory if this object is not used anymore. The way we release the memory is simply call the buid-in function **`free()`** or **`delete[]`**. However in C++ the procedure can exit anywhere. An exception can be thrown in the half way so that the code doesn't ever reach the line to release memory:
 ```c++
 int sample(int n) {
     void  *ptr = malloc(16);
@@ -62,11 +62,11 @@ int main() {
         strcpy(p, "world"); // error
 }
 ```
-This pointer p is called [***dangling pointer*** or ***wild pointer***](https://en.wikipedia.org/wiki/Dangling_pointer) and will only be erased after the whole procedure is finished or terminated. The wild pointer is really risky because of its random behavior. Imagine there is something in your room that sometimes can be observed sometimes cannot, randomly breaks your stuff but never leaves footprint. In programming it is called ***wild pointer***, and in real life it is called [**cat**](https://en.wikipedia.org/wiki/Cat). To prevent it, we should **always set the pointer to be NULL when it is not used/the memory is released**.
+This pointer p is called [***dangling pointer***](https://en.wikipedia.org/wiki/Dangling_pointer) or [***wild pointer***](https://en.wikipedia.org/wiki/Dangling_pointer) and will only be erased after the whole procedure is finished or terminated. The wild pointer is really risky because of its random behavior. Imagine there is something in your room that sometimes can be observed sometimes cannot, randomly breaks your stuff but never leaves footprint. In programming it is called wild pointer, and in real life it is called [**cat**](https://en.wikipedia.org/wiki/Cat). To prevent it, we should **always set the pointer to be NULL when it is not used/the memory is released**.
 
-***Note***: when you define a pointer without setting up its initial value, that pointer will also be a ***wild pointer*** and has a value of some random number (which doesn't equal to **NULL**). Hence it is necessary to set the value of a pointer to be **NULL** if it cannot be asigned a value at the beginning.
+***Note***: when you define a pointer without setting up its initial value, that pointer will also be a **wild pointer** and has a value of some random number (which doesn't equal to **NULL**). Hence it is necessary to set the value of a pointer to be **NULL** if it cannot be asigned a value at the beginning.
 
-For some simple pointers, they can be reasigned to **NULL** to prevent ***wild pointer***, however for a pointer referring to a hierarchical object, simply setting to **NULL** cannot resolve the potential issues. For example, you are using a ***vector*** in C++ :
+For some simple pointers, they can be reasigned to **NULL** to prevent **wild pointer**, however for a pointer referring to a hierarchical object, simply setting to **NULL** cannot resolve the potential issues. For example, you are using a **`vector`** in C++ :
 ```c++
 vector <string> v
 int main() {
@@ -78,7 +78,7 @@ int main() {
     cout << v.capacity() << endl;  //memory usage: still 54M
 }
 ```
-Even though we have cleared the vector and all its elements were indeed released, the capacity of the vector is still unchanged. **clear( )** removed all its element but cannot shrink the size of the container. The same thing happens to other containers such as **deque**. To handle this, before **C++ 11**, we can swap the pointers:
+Even though we have cleared the vector and all its elements were indeed released, the capacity of the vector is still unchanged. **`clear()`** removed all its element but cannot shrink the size of the container. The same thing happens to other containers such as **`deque`**. To handle this, before **C++ 11**, we can swap the pointers:
 ```c++
 int main() {
     ...
@@ -87,11 +87,11 @@ int main() {
     cout << v.capacity() << endl;  //memory usage: 0
 }
 ```
-after C++ 11, it provides function **shrink_to_fit( )** to remove the extra allocated memory.
+after C++ 11, it provides function **`shrink_to_fit()`** to remove the extra allocated memory.
 </br>
 
 ## GC doesn't avoid memory leaks
-It's not suprising that GC can prevent most cases of memory leaks because it is runnig in an individual thread, checking the memory regularly and removing the unreferred objects. It is so powerful that porgrammers rarely pay attention to memory management and be aware of the memory leaks. **Java** is such language which has powerful and unruly GC that can be hardly controlled (call **System.gc( )** doesn't certainly invoke GC). It helps to manage the memory in jvm, but it cannot avoid memory leaks.
+It's not suprising that GC can prevent most cases of memory leaks because it is runnig in an individual thread, checking the memory regularly and removing the unreferred objects. It is so powerful that porgrammers rarely pay attention to memory management and be aware of the memory leaks. **Java** is such language which has powerful and unruly GC that can be hardly controlled (call **`System.gc()`** doesn't certainly invoke GC). It helps to manage the memory in jvm, but it cannot avoid memory leaks.
 
 There are mainly two cases that can lead to memory leaks in Java. One is the object which has a longer lifecycle keeps a reference to another object which has a shorter lifecycle:
 ```java
@@ -106,7 +106,7 @@ public class Sample {
 ```
 If ***object*** is only used inside ***anymethod( )***, then after stack pops ***anymethod( )***, the lifecycle of ***object*** should also be ended. But for here, because class ***Sample*** is still proceeding and keeps the reference of ***object***, ***object*** cannot be collected by GC and hence leaks the memory. The solution will be either init ***object*** inside ***anymethod( )*** (as a local varible) or set ***object*** to be ***null*** after ***anymethod*** is finished.
 
-Another case is the use of ***HashSet***. ***HashSet*** is the implementation of hash-table and it stores elements according to their different hash values. In order to push and withdraw the same object in the ***HashSet***, we need to override the method ***HashCode( )*** so that the same object has the same hash vaule and being stored in the same place in ***HashSet***. However, if we push something into the ***HashSet*** and then change some properties of this object (those properties are most likely to be used to calculate the hashcode), the hashcode of this object may vary and when we refer this object back to our ***HashSet*** to do some operations, for example delete this object from the ***HashSet***, this object might not be found in the set and hence cannot be deleted:
+Another case is the use of **`HashSet`**. ***HashSet*** is the implementation of hash-table and it stores elements according to their different hash values. In order to push and withdraw the same object in the ***HashSet***, we need to override the method **`HashCode()`** so that the same object has the same hash vaule and being stored in the same place in ***HashSet***. However, if we push something into the ***HashSet*** and then change some properties of this object (those properties are most likely to be used to calculate the hashcode), the hashcode of this object may vary and when we refer this object back to our ***HashSet*** to do some operations, for example delete this object from the ***HashSet***, this object might not be found in the set and hence cannot be deleted:
 ```java
     HashSet<Obejct> set = new HashSet<Object>();
     Object something = new Object();

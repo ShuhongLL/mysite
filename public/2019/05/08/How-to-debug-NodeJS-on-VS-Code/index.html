@@ -127,13 +127,14 @@
     ]
 }
 </code></pre>
-<p>The port is the <strong>debug port</strong> and it has nothing to do with your program (no matter it is a service or not). Then in the terminal, run:</p>
+<p>The port is the <strong>debug port</strong> and it has nothing to do with your program (no matter it is a service or not). Then in the terminal, run the command:</p>
 <pre><code class="shell">node --debug-brk app.js arg1 arg2 arg3...
 </code></pre>
 <blockquote>
 <p>The <code>--debug-brk</code> lets your program wait for the debugger to attach to. So there is no problem that it terminates before the debugger could attach.</p>
 </blockquote>
-<p>Running such command, you may encounter a problem like this:</p>
+<p><br></p>
+<p>Running such command, you may encounter a warning below:</p>
 <pre><code>(node:31245) [DEP0062] DeprecationWarning: `node --inspect --debug-brk` is deprecated. Please use `node --inspect-brk` instead.     
 </code></pre><p>As discussed in <a href="https://github.com/Microsoft/vscode/issues/32529" target="_blank" rel="noopener">microsoft github offical repository</a>, currently there is <strong>no way</strong> to prevent this happening. The reason why using <code>--inspect --debug-brk</code> is explained <a href="https://github.com/microsoft/vscode/issues/27731" target="_blank" rel="noopener">here</a>:</p>
 <blockquote>
@@ -146,7 +147,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" data-id="cjvhwc8230005c0aoihm6d330" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" data-id="cjvhx9ndn0005kqaov84v9zen" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/">NodeJS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VS-Code/">VS Code</a></li></ul>
 

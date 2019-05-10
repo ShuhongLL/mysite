@@ -72,13 +72,15 @@ If you are running the program in the **terminal**, you can change the content a
 	]
 }
 ```
-The port is the **debug port** and it has nothing to do with your program (no matter it is a service or not). Then in the terminal, run:
+The port is the **debug port** and it has nothing to do with your program (no matter it is a service or not). Then in the terminal, run the command:
 ```shell
 node --debug-brk app.js arg1 arg2 arg3...
 ```
 >The `--debug-brk` lets your program wait for the debugger to attach to. So there is no problem that it terminates before the debugger could attach.
 
-Running such command, you may encounter a problem like this:
+</br>
+
+Running such command, you may encounter a warning below:
 ```
 (node:31245) [DEP0062] DeprecationWarning: `node --inspect --debug-brk` is deprecated. Please use `node --inspect-brk` instead.     
 ```

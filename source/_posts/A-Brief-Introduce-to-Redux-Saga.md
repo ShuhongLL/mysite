@@ -10,7 +10,7 @@ In a complex javascript application, asynchronous function is always one of the 
 </br>
 
 ## **Haven't heard of *CallBack Hell*?**
-Well, in javascript, the only way you can suspend a computation and have the rest operations doing later is to put the rest operations into a callback function. This callback function usually returns a ***Promise*** (And has a type of ***Promise<\any>***). In order to easily mark those async functions, after ***ES6*** javascript provides extra modifiers ***async*** and ***await***, which actually wraps up the original utilities of promise and makes it more readable to programmers. Hummm, sounds like things are going better... ~~**NO!! It doesn't resolve anything!**~~ The core problem leads to a callback hell is the hierarchical async calls, for example
+Well, in javascript, the only way you can suspend a computation and have the rest operations doing later is to put the rest operations into a callback function. This callback function usually returns a **`Promise`** (And has a type of **`Promise<any>`**). In order to easily mark those async functions, after ***ES6*** javascript provides extra modifiers **`async`** and **`await`**, which actually wraps up the original utilities of promise and makes it more readable to programmers. Hummm, sounds like things are going better... ~~**NO!! It doesn't resolve anything!**~~ The core problem leads to a callback hell is the hierarchical async calls, for example
 
 you have some simple synchronous functions which are in a chain to accomplish some logics:
 ```javascript
@@ -112,13 +112,13 @@ export function* apiSaga() {
 }
 ```
 There are serval fucntions already being integrated in Saga:
->***Call:*** the method call will return only a plain object describing the operation so redux-saga can take care of the invocation and returns the result to the generator. The first parameter is the generator function ready to be called and the rest params are all the arguments in the generator.
+>**`Call`**: the method call will return only a plain object describing the operation so redux-saga can take care of the invocation and returns the result to the generator. The first parameter is the generator function ready to be called and the rest params are all the arguments in the generator.
 
->***Put:*** Instead of dispatching an action inside the generator (Don't ever ever do that), ***put*** Returns an object with instructions for the middleware to dispatch the action.
+>**`Put`**: Instead of dispatching an action inside the generator (Don't ever ever do that), ***put*** Returns an object with instructions for the middleware to dispatch the action.
 
->***Select:*** Returns value from the selector function, similar with **getState( )**. ***Note:*** It is not recommended to use this function because it returns the value corresponding to the contents of the store state tree, which is most likely a plain Javascript object and is **mutable** (Redux wants you to handle state immutably, which means return a new state instead of changing the old one).
+>**`Select`**: Returns value from the selector function, similar with **`getState()`**. ***Note:*** It is not recommended to use this function because it returns the value corresponding to the contents of the store state tree, which is most likely a plain Javascript object and is **mutable** (Redux wants you to handle state immutably, which means return a new state instead of changing the old one).
 
->***Take:*** It creates a command object that tells the middleware to wait for a specific action. The resulting behavior of the call Effect is the same as when the middleware suspends the generator until a ***promise*** resolves. In the take case, it'll suspend the generator until a matching action is dispatched
+>**`Take`**: It creates a command object that tells the middleware to wait for a specific action. The resulting behavior of the call Effect is the same as when the middleware suspends the generator until a ***promise*** resolves. In the take case, it'll suspend the generator until a matching action is dispatched
 
 By working with Saga, we make the side effects to be ***declarative*** rather than ***imperative***.
 >***Declarative:*** describing what the program must accomplish, rather than describe how to accomplish it
@@ -221,7 +221,7 @@ describe("fetch work flow", () => {
     });
 });
 ```
-In the above example, we use **clone( )** to test different control flows and **next( )** to iterate to the next function ready be yielded. The mock return value can also be injected as an argument of **next( )**:
+In the above example, we use **`clone()`** to test different control flows and **`next()`** to iterate to the next function ready be yielded. The mock return value can also be injected as an argument of **`next()`**:
 ```javascript
 expect(clone.next(false).value).toEqual( put(fetchFailedAction()) );      
 ```
