@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Slice in Golang |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Type-slice-in-Golang" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Slice in Golang
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/05/12/Type-slice-in-Golang/" class="article-date">
+  <time datetime="2019-05-12T06:35:54.000Z" itemprop="datePublished">2019-05-12</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/GoSlice.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <p>This article is a summary from <a href="https://blog.golang.org/go-slices-usage-and-internals" target="_blank" rel="noopener">Andrew Gerrand’s blog</a></p>
+<p>Golang has an unique type <strong>slice</strong> which is an abstraction built on top of Go’s <strong>array</strong> type. They are really similar but providing different means of working with sequences of typed data. So to understand slices we must first understand arrays.<a id="more"></a><br><br></p>
+<h2 id="Arrays-in-Go"><a href="#Arrays-in-Go" class="headerlink" title="Arrays in Go"></a>Arrays in Go</h2><p>An array in Go has to specify its <strong>length</strong> and <strong>element type</strong>. <strong>The size of the array is fixed and its length is part of its type</strong>. For example <code>[4]int</code> and <code>[5]int</code> are distinct and have different types even though they all store integers. And contrary to <strong>C/C++</strong>, the initial value of an array will be filled with <strong>0</strong> if it is not initialized.</p>
+<pre><code class="Go">var a [4]int
+a[0] = 1
+i := a[0]
+j := a[1]
+//i == 1
+//j == 0
+</code></pre>
+<p>Go’s arrays are values. <strong>An array variable denotes the entire array</strong>; it is not a pointer to the first array element (as would be the case in C/C++). This means that when you assign or pass around an array value you will make a copy of its contents. (To avoid the copy you could pass a pointer to the array, but then that’s a pointer to an array, not an array)</p>
+<p>An array literal can be specified like so:</p>
+<pre><code class="Go">b := [2]string{&quot;aa&quot;, &quot;bb&quot;}
+</code></pre>
+<p>Or, you can have the compiler counting the array elements for you:</p>
+<pre><code class="Go">b := [...]string{&quot;aa&quot;, &quot;bb&quot;}
+</code></pre>
+<p>In both cases, the type of b is <strong>[2]string</strong>.<br><br></p>
+<h2 id="Slices-in-Go"><a href="#Slices-in-Go" class="headerlink" title="Slices in Go"></a>Slices in Go</h2><p>Arrays are a bit inflexible, so you don’t see them too often in the code. Slices, though, are everywhere. Unlike an array type, a slice type has no specific length:</p>
+<pre><code class="Go">b := []string{&quot;aa&quot;, &quot;bb&quot;}
+</code></pre>
+<p>We can use build-in function <code>make()</code> to define a slice:</p>
+<pre><code class="Go">func make([]T, len, cap) []T
+</code></pre>
+<p><strong>T</strong> represent the type of the elements. Function <strong>make</strong> accepts type, length and capacity(optional) as parameters. When it is called, <strong>make</strong> will allocate an array and returns a slice that refers to that array</p>
+<pre><code class="Go">var s []byte
+s = make([]byte, 5, 5)
+//s == []byte{0, 0, 0, 0, 0}
+</code></pre>
+<p>If <strong>cap</strong> is not specified, it will be init as the value of <strong>len</strong>. We can use the build-in functions <code>len()</code> and <code>cap()</code> to check the length and capacity of a slice:</p>
+<pre><code class="Go">len(s) == 5
+cap(s) == 5
+</code></pre>
+<p>The zero value of a slice is <strong>nil</strong>. The len and cap functions will both return <strong>0</strong> for a nil slice.</p>
+<p>A slice can also be formed by “slicing” an existing slice or array, for example, the expression b[1:4] creates a slice including elements 1 through 3 of b:</p>
+<pre><code class="Go">b := []byte{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;}
+// b[1:4] == []byte{&#39;b&#39;, &#39;c&#39;, &#39;d&#39;}, sharing the same storage as b
+</code></pre>
+<p>The start and end indices of a slice expression are optional; they default to zero and the slice’s length respectively:</p>
+<pre><code class="Go">// b[:2] == []byte{&#39;a&#39;, &#39;b&#39;}
+// b[2:] == []byte{&#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;}
+// b[:] == b
+</code></pre>
+<p>This is also the syntax to create a slice given an array:</p>
+<pre><code class="Go">x := [3]string{&quot;Лайка&quot;, &quot;Белка&quot;, &quot;Стрелка&quot;}
+s := x[:] // a slice referencing the storage of x
+</code></pre>
+<p>Slicing does not copy the slice’s data. It creates a new slice value that points to the original array. This makes slice operations as efficient as manipulating array indices. Therefore, modifying the elements of a re-slice modifies the elements of the original slice:</p>
+<pre><code class="Go">d := []byte{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;}
+e := d[2:]
+// e == []byte{&#39;c&#39;, &#39;d&#39;}
+
+// now change the re-slice will also change the original slice  
+e[1] = &#39;m&#39;
+// e == []byte{&#39;c&#39;, &#39;m&#39;}
+// d == []byte{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;m&#39;}
+</code></pre>
+<p>A slice cannot be grown beyond its capacity. Attempting to do so will cause a <strong><em>runtime panic</em></strong>, just as when indexing outside the bounds of a slice or array. Similarly, slices cannot be re-sliced below zero to access earlier elements in the array.<br><br></p>
+<h2 id="Double-the-capacity-of-a-slice"><a href="#Double-the-capacity-of-a-slice" class="headerlink" title="Double the capacity of a slice"></a>Double the capacity of a slice</h2><p>To increase the capacity of a slice, we must create a new, larger slice and <strong>copy</strong> the contents of the original slice into it. The belowing example shows how to create a new slice <strong>t</strong> whihc doubles the capacity of <strong>s</strong>:</p>
+<pre><code class="Go">t := make([]byte, len(s), (cap(s) * 2))
+for i:= range s {
+    t[i] = s[i]
+}
+s = t   //reassign s to t
+</code></pre>
+<p>The loop can be replaced by the build-in function <code>copy()</code>, which copies the data from source and returns the number of elements copied:</p>
+<pre><code class="Go">func copy(dst, src []T) int
+</code></pre>
+<p>The function <strong>copy</strong> supports copying between slices of different lengths (it will copy only up to the smaller number of elements) and the case that two slices refer to the same array. Using <strong>copy</strong>, the above double size code snippet can be rewritten as:</p>
+<pre><code class="Go">t := make([]byte, len(s), (cap(s) * 2))
+copy(t, s)
+s = t
+</code></pre>
+<p>A common operation is to append new data to the tail of a slice:</p>
+<pre><code class="Go">func AppendByte(slice []byte, data ...type) []byte {
+    m := len(slice)
+    n := m + len(data)
+    if n &gt; cap(slice) { //if the original capacity is not big enough     
+        newSlice := make([]byte, (n + 1) * 2)
+        copy(newSlice, slice)
+        slice = newSlice
+    }
+    slice = slice[0:n] //shrink the capacity to the length of data  
+    copy(slice[m:n], data)
+    return slice
+}
+</code></pre>
+<p>This customized AppendByte function is really useful because we can fully control the size of a slice. However most programs do need such complete control. Go provides a build-in function <code>append()</code> which appends slice x to the end of slice s, expanding s if needed:</p>
+<pre><code class="Go">func append(s []T, x ...T) []T
+</code></pre>
+<p>Using <strong>…</strong> to append one slice to the end of another:</p>
+<pre><code class="Go">a := []string{&quot;aa&quot;, &quot;bb&quot;}
+b := []string{&quot;cc&quot;, &quot;dd&quot;}
+a = append(a, b...) //same as append(a, b[0], b[1], b[2])   
+</code></pre>
+<p>Another example of append:</p>
+<pre><code class="Go">func Filter(s []int, fn func(int) bool) []int {
+    var p []int // p == nil
+    for _, v := range s {
+        if fn(v) {
+            p = append(p, v)
+        }
+    }
+    return p
+}
+</code></pre>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/05/12/Type-slice-in-Golang/" data-id="cjvkoelcl0007avaob588nt2d" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang-Array-Slice/">Golang Array Slice</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/05/08/How-to-debug-NodeJS-on-VS-Code/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">How to debug NodeJS on VS Code</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

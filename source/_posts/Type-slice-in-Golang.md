@@ -1,7 +1,7 @@
 ---
 title: Slice in Golang
 date: 2019-05-12 15:35:54
-tags: Golang Array Slice
+tags: [Golang, Array, Slice]
 photos: ["../images/GoSlice.JPG"]
 ---
 This article is a summary from [Andrew Gerrand's blog](https://blog.golang.org/go-slices-usage-and-internals)
