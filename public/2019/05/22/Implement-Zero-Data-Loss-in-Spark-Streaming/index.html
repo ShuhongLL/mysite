@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Implement Zero Data Loss in Spark Streaming |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Implement-Zero-Data-Loss-in-Spark-Streaming" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Implement Zero Data Loss in Spark Streaming
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" class="article-date">
+  <time datetime="2019-05-22T09:19:14.000Z" itemprop="datePublished">2019-05-22</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>This is a log from my own experience in spark streaming during my work. Base on different environment and servers, the strategy may vary. For here, I am working with <strong>Kafka</strong> and Google Cloud <strong>PubSub</strong>. <a id="more"></a></p>
+<h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>I have such workflow that the spark streaming receives dataset from both Kafka and PubSub, after doing some clean up and modeling, push the data to the Cloud Datastore.<br><img src="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/sparkworkflow.JPG" alt="my Workflow"><br>It works fine when the data stream is small and reports me the expected values; however while the number of end users is growing large, especially when the data stream turns to be erratic and sometimes considerably large if end users interact frequently with our UI pages, the spark streaming will get a lot of uncertain runtime errors. Those errors are most likely caused by the finite number of workers in our cluster. Also when there are too much stream rushing over to the server, the limited memory in cache will cause failures. After we upgraded the cluster on cloud, the number of errors is significantly reduced.<br><img src="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/cpudiagram.JPG" alt="CPU Utilization"><br>But the data processed during the errors was permanently lost and cannot be recovered. </p>
+<pre><code class="scala">val ssc = StreamingContext.createContext(...params)
+
+def createContext(...params): StreamingContext = {
+    val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)
+                                   .set(&quot;spark.streaming.receiver.writeAheadLog.enable&quot;,&quot;true&quot;)    
+    val ssc = new StreamingContext(sparkConf, Seconds(1))
+    ...
+    ssc.checkpoint(CHECK_POINT_DIR)
+    ssc
+}
+</code></pre>
+<p>Set the spark automatically clean checkpoints to save disk memory.</p>
+<pre><code class="scala">val ssc = StreamingContext.createContext(...params)
+
+def createContext(...params): StreamingContext = {
+    val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)
+                                   .set(&quot;spark.streaming.receiver.writeAheadLog.enable&quot;,&quot;true&quot;)
+                                   .set(&quot;spark.cleaner.referenceTracking.cleanCheckpoints&quot;, &quot;true&quot;)    
+    val ssc = new StreamingContext(sparkConf, Seconds(1))
+    ...
+    ssc.checkpoint(CHECK_POINT_DIR)
+    ssc
+}
+
+</code></pre>
+<p>This will not clean the latest checkpoint as the it is still referred to recover from dirver failures.</p>
+<pre><code class="scala">val ssc = StreamingContext.getOrCreate(CHECK_POINT_DIR, () =&gt; createContext(...params))
+
+def createContext(...params): StreamingContext = {
+    val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)
+                                   .set(&quot;spark.streaming.receiver.writeAheadLog.enable&quot;,&quot;true&quot;)
+                                   .set(&quot;spark.cleaner.referenceTracking.cleanCheckpoints&quot;, &quot;true&quot;)    
+    val ssc = new StreamingContext(sparkConf, Seconds(1))
+    ...
+    ssc.checkpoint(CHECK_POINT_DIR)
+    ssc
+}
+</code></pre>
+<p>After switch to <code>getOrCreate()</code>, I had the following exception:</p>
+<pre><code>Exception in thread &quot;main&quot; org.apache.spark.SparkException: Failed to read checkpoint from directory checkpointDir
+    at org.apache.spark.streaming.CheckpointReader$.read(Checkpoint.scala:368)
+    at org.apache.spark.streaming.StreamingContext$.getOrCreate(StreamingContext.scala:827)
+    ...
+Caused by: java.io.IOException: java.lang.ClassCastException: cannot assign instance of com.some.project$$anonfun$1 to field org.apache.spark.streaming.dstream.MappedDStream.org$apache$spark$streaming$dstream$MappedDStream$$mapFunc of type scala.Function1 in instance of org.apache.spark.streaming.dstream.MappedDStream     
+    at org.apache.spark.util.Utils$.tryOrIOException(Utils.scala:1310)
+    at org.apache.spark.streaming.DStreamGraph.readObject(DStreamGraph.scala:194)
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    ...
+</code></pre><p>This can be solved by deleting the original checkpoint in HDFS locals (manually).</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" data-id="cjvz3789f00068zaoicldz21s" class="article-share-link">Share</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/05/22/如何用VS-Code免翻墙听网易云音乐/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">如何用VS Code免翻墙听网易云音乐</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
