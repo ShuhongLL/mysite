@@ -23,12 +23,35 @@ Checkpointing is a process supported by spark streaming after version which will
 │       ├── part-timestamp2
 │       └── .part-timestamp2.crc
 ```
-Since the data stream will be replicated on disk, the performance will slow down due to file I/O. **Local checkpoint** privileges performance over fault-tolerance which will persist RDDs on local storage in the executors. Read or write will be faster in this case; however if a driver fails, the data not yet executed may not be recoverable. As default, the data storeage level is set to `MEMORY_AND_DISK` which saves data in cache and disk (some in cache and some in disk). For here I changed to `StorageLevel.MEMORY_AND_DISK_SER_2` (more details can be referred to [here](https://stackoverflow.com/questions/30520428/what-is-the-difference-between-memory-only-and-memory-and-disk-caching-level-in)). This driver recovery mechanism is sufficient to ensure zero data loss if all data was reliably store in the system. However for my circumstance, some of the data buffered in memory could be lost. When the driver process fails, all the executors running are killed as well, along with any data in their memory. This pushes me to look for something more advanced.
+Since the data stream will be replicated on disk, the performance will slow down due to file I/O. **Local checkpoint** privileges performance over fault-tolerance which will persist RDDs on local storage in the executors. Read or write will be faster in this case; however if a driver fails, the data not yet executed may not be recoverable. As default, the data storeage level is set to `MEMORY_AND_DISK` which saves data in cache and disk (some in cache and some in disk). For here I changed to `MEMORY_AND_DISK_SER_2` (more details can be referred to [here](https://stackoverflow.com/questions/30520428/what-is-the-difference-between-memory-only-and-memory-and-disk-caching-level-in)). The different is that, unlike **cache** only, the checkpoints doesn't save DAG with all the parents of RDDs; instead, they only save particular RDDs and remain for a longer time than cache. The time of persistance is strictly related to the executed computation and ends with the end of the spark application. To apply the checkpoint machanism, you just simply need to set the checkpoint directory when you are creating the **StreamingContext**
+```scala
+def createContext(...params): StreamingContext = {
+    val sparkConf = new SparkConf().setAppName("KpiAnalysis")   
+     val ssc = new StreamingContext(sparkConf, Seconds(1))
+     ...
+     ssc.checkpoint(CHECK_POINT_DIR)
+     ssc
+}
+```
+and before an action is operated on RDD:
+```scala
+    sRDD.checkpoint()
+    sRDD.foreachPartition { partitionOfRecords => {     
+        ...
+        }
+    }
+```
+and `sRDD.isCheckpointed()` will return **true**. For cleaning, the RDDs stored in cache will be cleaned with all other memory after the whole spark application is finished or terminated; the reliable RDDs stored on disk can be cleaned manually or set 
+`spark.cleaner.referenceTracking.cleanCheckpoints` property to be **true** to enable automatic cleaning. This driver recovery mechanism is sufficient to ensure zero data loss if all data was reliably store in the system. However for my circumstance, the data is read from **kafka** and some of the data buffered in memory could be lost. If the driver process fails, all the executors running will be killed as well, along with any data in their memory. This pushes me to look for other mechanisms which are more advanced.
 </br>
 
 ## Write Ahead Logs
+Write Ahead Logs are used in database and file systems to ensure the durability of any data operations. The intention of the operation is first written down into a durable log , and then the operation is applied to the data. If the system fails in the middle of applying the operation, it can recover by reading the log and reapplying the operations it had intended to do.
 
-
+Spark streaming uses **Receiver** to read data from **Kafka**. They run as long-running tasks in the executors and store the revecived data in the memory of the executors. If you enable the **checkpoint**, the data will be checkpointed either in cache or disk **in executors** before porceed into the application drivers. Unlike **checkpoint**, applying **WAL** will instead backup the recevied data in an **external fault-tolerant filesystem**. And after the executor batches the received data and sends to the driver, **WAL** supports another log to store the block metadata into external filesystem before being executed.
+![https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html](wal_spark.JPG)
+(diagram from https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html)
+Spark streaming starts supporting WAL after version 1.2 and can be enabled by setting the config:
 
 ```scala
 val ssc = StreamingContext.createContext(...params)
@@ -42,8 +65,7 @@ def createContext(...params): StreamingContext = {
     ssc
 }
 ```
-
-Set the spark automatically clean checkpoints to save disk memory.
+Set the spark automatically clean checkpoints to release disk memory:
 ```scala
 val ssc = StreamingContext.createContext(...params)
 
@@ -58,9 +80,7 @@ def createContext(...params): StreamingContext = {
 }
 
 ```
-This will not clean the latest checkpoint as the it is still referred to recover from dirver failures.
-
-
+This will not clean the latest checkpoint as it is still referred to by the application to recover from possible failures. If you expect to restart the application driver if it crashed due to some errors and exactly start from where it crashed last time instead of performing the whole operation once again, you can create **StreamingContext** from the previous checkpoint by using the method `getOrCreate()`:
 ```scala
 val ssc = StreamingContext.getOrCreate(CHECK_POINT_DIR, () => createContext(...params))
 
@@ -74,9 +94,7 @@ def createContext(...params): StreamingContext = {
     ssc
 }
 ```
-
-
-After switch to `getOrCreate()`, I had the following exception:
+However after I tried switching to `getOrCreate()`, I had the following exception:
 ```
 Exception in thread "main" org.apache.spark.SparkException: Failed to read checkpoint from directory checkpointDir
     at org.apache.spark.streaming.CheckpointReader$.read(Checkpoint.scala:368)
@@ -88,17 +106,39 @@ Caused by: java.io.IOException: java.lang.ClassCastException: cannot assign inst
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
     ...
 ```
-This can be solved by deleting the original checkpoint in HDFS locals (manually).
+It is because this is not the first time I use checkpoints, and there already exsists some other checkpoints in the same root directory (etc, the simple checkpoint discussed previously). Since the application tried to read from those unrelated checkpoints and expected to cast them to generate new context, it would throw such **ClassCastException**. This can be easily solved by deleting original checkpoints in HDFS locals (manually).
 
+WAL is an advanced checkpoint mechanism and also simple to be applied. Compared with checkpoint, it saves data into an external filesystem so that even though if the executor is terminated and the data in memory is clean-uped, data still can be recovered from the external filesystem. However. it can only recover the data which is logged in the filesystem, if the drivers fail due to some error, the executor will be terminated as well, so as the WAL writer. Then the rest incomming data will not be logged into the filesystem and hence, is not recoverable. It can be tested by calling **stop** to the **StreamContext**:
 ```scala
 def stop(stopSparkContext: Boolean, stopGracefully: Boolean): Unit
 ```
-
+Once it is called, the following console log interpretes that the **WAL Writer** is interrupted as well:
 ```
 ERROR ReceiverTracker: Deregistered receiver for stream 0: Stopped by driver
 WARN BlockGenerator: Cannot stop BlockGenerator as its not in the Active state [state = StoppedAll]     
 WARN BatchedWriteAheadLog: BatchedWriteAheadLog Writer queue interrupted.
 ```
-are not recoverable across applications or Spark upgrades and hence not very reliable
+And also the data will not be recoverable across applications or Spark upgrades and hence not very reliable
+</br>
 
 ## Kafka Direct API
+This mechanism is only available when you data source is **Kafka**. Kafka supports a commit strategy which is able to help you manage offsets of each topics. Each offset points to a slot in a topic. When the data stored in this slot is consumed by any receiver, Kafka will be acknowledged by this consumption and moves the index to the next data slot.
+![https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/](Spark-Streaming-flow-for-offsets.JPG)
+(diagram from https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/)
+When `enable.auto.commit` is set to be true, as soon as any reveiver retrieves the data from the Offset datastore in Kafka (here I use Kafka to store offsets), the receiver will automatically commit, which doesn't ensure that the data is successfully executed in the spark streaming. Therefore, we have to disbale the auto-commit when we are creating DStream from Kafka. After the data is successfully processed, we manually commit the offset to the datastore by calling the Kafka direct API:
+```scala
+stream.foreachRDD { rdd =>
+      //get current offset
+      val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+
+      //process data
+
+      //store data in some datastore
+      DataStoreDB.push(...param)
+
+      //commit offset to kafka
+      stream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
+    }
+  }
+```
+This ensures that the data will be executed only once.
