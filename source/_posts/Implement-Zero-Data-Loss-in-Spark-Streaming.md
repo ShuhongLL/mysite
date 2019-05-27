@@ -1,7 +1,8 @@
 ---
 title: Implement Zero Data Loss in Spark Streaming
 date: 2019-05-22 18:19:14
-tags:
+tags: [Spark, Kafka]
+photos: ["../images/spark_kafka.JPG"]
 ---
 This is a log from my own experience in spark streaming during my work. Base on different environment and servers, the strategy may vary. For here, I am working with **Kafka** and Google Cloud **PubSub**. <!-- more -->
 
@@ -141,4 +142,4 @@ stream.foreachRDD { rdd =>
     }
   }
 ```
-This ensures that the data will be executed only once.
+If an error occurs at any point during the execution, the offset won;t be committed to the kafka offset store and hence the same data will be resent by kafka, which ensures that the data will be executed only once.
