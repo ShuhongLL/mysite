@@ -126,7 +126,7 @@ And also the data will not be recoverable across applications or Spark upgrades 
 This mechanism is only available when you data source is **Kafka**. Kafka supports a commit strategy which is able to help you manage offsets of each topics. Each offset points to a slot in a topic. When the data stored in this slot is consumed by any receiver, Kafka will be acknowledged by this consumption and moves the index to the next data slot.
 ![https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/](Spark-Streaming-flow-for-offsets.JPG)
 (diagram from https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/)
-When `enable.auto.commit` is set to be true, as soon as any reveiver retrieves the data from the Offset datastore in Kafka (here I use Kafka to store offsets), the receiver will automatically commit, which doesn't ensure that the data is successfully executed in the spark streaming. Therefore, we have to disbale the auto-commit when we are creating DStream from Kafka. After the data is successfully processed, we manually commit the offset to the datastore by calling the Kafka direct API:
+When `enable.auto.commit` is set to be true, as soon as any receiver retrieves the data from the offset datastore in Kafka (here I use Kafka to store offsets), the receiver will automatically commit, which doesn't ensure that the data is successfully executed in the spark streaming. Therefore, we have to disbale the auto-commit when we are creating DStream from Kafka. After the data is successfully processed, we manually commit the offset to the datastore by calling the Kafka direct API:
 ```scala
 stream.foreachRDD { rdd =>
       //get current offset
