@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Prefix Tree |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Prefix-Tree" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Prefix Tree
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/07/18/Prefix-Tree/" class="article-date">
+  <time datetime="2019-07-18T09:30:12.000Z" itemprop="datePublished">2019-07-18</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/prefixTree.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <blockquote>
+<p>A trie, also called digital tree, radix tree or prefix tree, is a kind of search tree—an ordered tree data structure used to store a dynamic set or associative array where the keys are usually strings. </p>
+</blockquote>
+<p>Each node of the tree represents a string (prefix) and has multiple child nodes. A prefix tree is always used as search prompt when users browse through the search engine. The runtime of each query operation is independent with the size of the prefix tree; instead, it is decided by the length of the query target. <a id="more"></a><br><br></p>
+<h2 id="Sample"><a href="#Sample" class="headerlink" title="Sample"></a>Sample</h2><p>Here list an array of some random words:</p>
+<blockquote>
+<p>sin, sis, con, com, cin, cmd</p>
+</blockquote>
+<p>Then we can construct a prefix tree as following:<br><img src="/2019/07/18/Prefix-Tree/prefix_tree.JPG" alt="prefix tree sample"><br>During the query operation, there is no need to iterate the whole tree; instead, simply following each node and recursively going through its children will return the target or none if the target does not exist in the tree.<br><br></p>
+<h2 id="Construct-A-Prefix-Tree"><a href="#Construct-A-Prefix-Tree" class="headerlink" title="Construct A Prefix Tree"></a>Construct A Prefix Tree</h2><p>There are multiple ways to form a prefix tree. The most popular method is to maintain three arrays in the instance to record end, path and next.</p>
+<ul>
+<li><p><strong>Node</strong></p>
+<pre><code class="python">class TrieNode:
+  def __init__(self):
+      self.nodes = {}
+      self.count = 0
+      self.isword = False
+</code></pre>
+</li>
+<li><p><strong>CRUD</strong></p>
+<pre><code class="python">class Trie:
+  def __init__(self):
+      &quot;&quot;&quot;
+      Initialize data structure.
+      &quot;&quot;&quot;
+      self.root = TrieNode()
+
+  def insert(self, word: str):
+      &quot;&quot;&quot;
+      Inserts a word into the trie.
+      :type word: str
+      :rtype: void
+      &quot;&quot;&quot;
+      curr = self.root
+      for char in word:
+          if char not in curr.nodes:
+              curr.nodes[char] = TrieNode()
+          curr.nodes[char].count += 1
+          curr = curr.nodes[char]
+      curr.isword = True
+
+  def query(self, target: str):
+      &quot;&quot;&quot;
+      Returns if the word is in the trie.
+      :type target: str
+      :rtype: bool
+      &quot;&quot;&quot;
+      curr = self.root
+      for char in target:
+          if char not in curr.nodes:
+              return False
+          curr = curr.nodes[char]
+      return curr.isword
+
+  def startWith(self, prefix: str):
+      &quot;&quot;&quot;
+      Returns the number of words in the trie that start with the given prefix.   
+      :type prefix: str
+      :rtype: int
+      &quot;&quot;&quot;
+      curr = self.root
+      for char in prefix:
+          if char not in curr.nodes:
+              return 0
+          curr = curr.nodes[char]
+      return curr.count
+
+  def delete(self, target: str):
+      &quot;&quot;&quot;
+      Returns true if target exist and successfully delete from the trie.
+      :type target: str
+      :rtype: bool
+      &quot;&quot;&quot;
+      curr = self.root
+      for char in prefix:
+          if char not in curr.nodes:
+              return False
+          curr = curr.nodes[char]
+      if curr.isword:
+          curr.isword = False
+          return True
+      return False
+
+  def listAllMatches(self, prefix: str):
+      &quot;&quot;&quot;
+      Returns all words started with prefix
+      :param prefix:
+      :return: List[str]
+      &quot;&quot;&quot;
+      result = []
+      def recursiveQuery(node: TrieNode, path: str):
+          if not node.nodes:
+              result.append(path)
+          else:
+              for key in node.nodes.keys():
+                  recursiveQuery(node.nodes[key], path + key)
+      curr = self.root
+      for char in prefix:
+          if char not in curr.nodes:
+              return result
+          curr = curr.nodes[char]
+      recursiveQuery(&#39;&#39;)
+      return result
+</code></pre>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/07/18/Prefix-Tree/" data-id="cjy8r6hh80009xiaond78fcc1" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Prefix-Tree/">Prefix Tree</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Implement Zero Data Loss in Spark Streaming</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
