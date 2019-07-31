@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>
-    如何用VS Code免翻墙听网易云音乐 |
+    Suffix Tree |
     
     OhYoooo</title>
   
@@ -23,7 +23,7 @@
 <body>
 <main class="content">
   <section class="outer">
-  <article id="post-如何用VS-Code免翻墙听网易云音乐" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+  <article id="post-Suffix-Tree" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
 
   <div class="article-inner">
     
@@ -31,7 +31,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      如何用VS Code免翻墙听网易云音乐
+      Suffix Tree
     </h1>
   
 
@@ -40,8 +40,8 @@
 
     
       <div class="article-meta">
-        <a href="/2019/05/22/如何用VS-Code免翻墙听网易云音乐/" class="article-date">
-  <time datetime="2019-05-22T07:27:00.000Z" itemprop="datePublished">2019-05-22</time>
+        <a href="/2019/07/22/Suffix-Tree/" class="article-date">
+  <time datetime="2019-07-22T11:07:12.000Z" itemprop="datePublished">2019-07-22</time>
 </a>
         
       </div>
@@ -51,52 +51,38 @@
       
 
       
-  <div class="article-gallery">
-    <div class="article-gallery-photos">
-      
-        
-          <img src="/../images/neteaseMusic.JPG" itemprop="image">
-        
-      
-    </div>
-  </div>
-
 
       
-        <p>在墙外打开网易云音乐发现全是灰色的？ 抱歉您所在区域无法播放？ 该资源暂无版权？ 需要vip？<br>VS Code<strong>一行script</strong>全搞定～～ <a id="more"></a></p>
+        <p>Suffix tree is a data structure aimming at solving <strong>string</strong> related problems in <strong>linear time</strong><br><a id="more"></a></p>
+<h2 id="String-Match-Algorithm"><a href="#String-Match-Algorithm" class="headerlink" title="String Match Algorithm"></a>String Match Algorithm</h2><p>A common string match problem always contains:</p>
 <ul>
-<li><p>打开VS Code</p>
-</li>
-<li><p>左侧 Extensions 搜索 Netease Music (VSC Netease Music) 或者点<a href="https://marketplace.visualstudio.com/items?itemName=nondanee.vsc-netease-music" target="_blank" rel="noopener">这里</a></p>
-</li>
-<li><p>点击 Install 后重启 VS Code</p>
-</li>
-<li><p>作者提供了基于 VS Code 自身插件工具 Webview 实现的通过替换 electron 动态链接库翻墙的插件, 有详细的<a href="https://marketplace.visualstudio.com/items?itemName=nondanee.vsc-netease-music" target="_blank" rel="noopener">中文文档</a>, 这里 <strong>Unix Shell</strong> 用户（包括 <strong>MacOS</strong>）可以直接在 <strong>Terminal</strong> （任意dir）输入以下script:</p>
-<pre><code>curl https://gist.githubusercontent.com/nondanee/f157bbbccecfe29e48d87273cd02e213/raw | python
-</code></pre><p>script 输出结果为:</p>
-<pre><code>% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                               Dload  Upload   Total   Spent    Left  Speed
-100  3060  100  3060    0     0   8496      0 --:--:-- --:--:-- --:--:--  8476  
-vscode 1.34.0 x64
-electron 3.1.8
-download well
-replace done
-remove temp
-</code></pre></li>
-<li><p>替换完毕后打开 VS Code, 上方工具栏 Go -&gt; Go to file… 或者 <code>Command(⌘) P</code>, 输入：</p>
-<pre><code>&gt;NeteaseMusic: Start
-</code></pre><p>等待 editor 跳出 <strong>Please preserve this webview tab</strong> 后就可以使用所有网易云的功能了, 注意这个tab页面必须要保留（不能关闭）</p>
-</li>
-<li><p>使用时直接<code>Command(⌘) P**</code>后输入命令即可, 命令都是以 <code>&gt;NeteaseMusic</code>起头, 输入 <code>&gt;ne</code> 后VS Code会自动跳出并补齐可行指令, 甚至还可以登陆收藏查看评论</p>
-</li>
+<li><strong>Text</strong> as an array of length n: T[n]</li>
+<li><strong>Pattern</strong> as an array of length m which m &lt;=n: P[m]</li>
+<li><strong>Valid Shift</strong> which is the offset of the first character of the pattern showing up in the target text<br><img src="/2019/07/22/Suffix-Tree/PrefixTree_StringProblem.JPG" alt="String Match Problem Sample"><br>We usually use two methods to solve string match problem:</li>
+<li>Naive String Matching Algorithm</li>
+<li>Knuth-Morris-Pratt Algorithm（KMP Algorithm)</li>
 </ul>
+<p>The algorithm always consists with two steps: <strong>Preprocessing</strong> and <strong>Matching</strong>, and the total runtime will be accordingly the sum of two procedures.</p>
+<blockquote>
+<p>Naive String Matching: O((n-m)m)<br>KMP: O(m + n)<br>Such algorithms are all doing preprocessings on the pattern to boost the searching procedure and the best runtime perfomance will be O(m) on preprocessing where m represents the length of the pattern. On contrary, is there a preprocessing which can be applied on <strong>text</strong> to speed up the whole process? This is the key reason why I am moving to <strong>suffix tree</strong>, which is a data structure doing preprocessing on text.<br><br></p>
+</blockquote>
+<h2 id="Suffix-Tree"><a href="#Suffix-Tree" class="headerlink" title="Suffix Tree"></a>Suffix Tree</h2><p>The previous post used to introduce a prefix tree:<br><img src="/2019/07/22/Suffix-Tree/prefix_tree.JPG" alt="prefix tree sample"><br>Individual nodes branch out from the same prefix. As you can see, there are some nodes which only have one child. Let’s try to compress them together:<br><img src="/2019/07/22/Suffix-Tree/Compressed_PrefixTree.JPG" alt="prefix tree sample"><br>After the compression, we get a <strong>Compressed Prefix Tree</strong>. A compressed prefix tree, also called compressed tire is the fundamental of suffix tree. Besides, the key values stored in each nodes of a suffix tree is all the possible suffix.</p>
+<p>For example, for a single word (<strong>Text</strong>) <code>banana\0</code>, we have the following set of suffix:</p>
+<pre><code>banana\0
+anana\0
+nana\0
+ana\0
+na\0
+a\0
+\0
+</code></pre><p>Construct a prefix tree using the above key word:<br><img src="/2019/07/22/Suffix-Tree/Banana_PrefixTree.JPG" alt="Banana Prefix Tree"><br>Afterwards, compress it:<br><img src="/2019/07/22/Suffix-Tree/Banana_SuffixTree.JPG" alt="Banana Suffix Tree"><br>Here we get a suffix tree!</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/22/如何用VS-Code免翻墙听网易云音乐/" data-id="cjyedivus000at8ao0b5j0ykq" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/07/22/Suffix-Tree/" data-id="cjyedivup0007t8aonhzgs8ph" class="article-share-link">Share</a>
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NeteaseMusic/">NeteaseMusic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VS-Code/">VS Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/网易云/">网易云</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Suffix-Tree/">Suffix Tree</a></li></ul>
 
     </footer>
 
@@ -106,19 +92,10 @@ remove temp
     
   <nav class="article-nav">
     
-      <a href="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" class="article-nav-link">
-        <strong class="article-nav-caption">Newer posts</strong>
-        <div class="article-nav-title">
-          
-            Implement Zero Data Loss in Spark Streaming
-          
-        </div>
-      </a>
     
-    
-      <a href="/2019/05/12/Type-slice-in-Golang/" class="article-nav-link">
+      <a href="/2019/07/18/Prefix-Tree/" class="article-nav-link">
         <strong class="article-nav-caption">Olde posts</strong>
-        <div class="article-nav-title">Slice in Golang</div>
+        <div class="article-nav-title">Prefix Tree</div>
       </a>
     
   </nav>

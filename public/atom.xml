@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ohyoooo.github.io/"/>
-  <updated>2019-07-18T14:08:34.719Z</updated>
+  <updated>2019-07-22T12:35:51.974Z</updated>
   <id>https://ohyoooo.github.io/</id>
   
   <author>
@@ -15,6 +15,26 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Suffix Tree</title>
+    <link href="https://ohyoooo.github.io/2019/07/22/Suffix-Tree/"/>
+    <id>https://ohyoooo.github.io/2019/07/22/Suffix-Tree/</id>
+    <published>2019-07-22T11:07:12.000Z</published>
+    <updated>2019-07-22T12:35:51.974Z</updated>
+    
+    <content type="html"><![CDATA[<p>Suffix tree is a data structure aimming at solving <strong>string</strong> related problems in <strong>linear time</strong><br><a id="more"></a></p><h2 id="String-Match-Algorithm"><a href="#String-Match-Algorithm" class="headerlink" title="String Match Algorithm"></a>String Match Algorithm</h2><p>A common string match problem always contains:</p><ul><li><strong>Text</strong> as an array of length n: T[n]</li><li><strong>Pattern</strong> as an array of length m which m &lt;=n: P[m]</li><li><strong>Valid Shift</strong> which is the offset of the first character of the pattern showing up in the target text<br><img src="/2019/07/22/Suffix-Tree/PrefixTree_StringProblem.JPG" alt="String Match Problem Sample"><br>We usually use two methods to solve string match problem:</li><li>Naive String Matching Algorithm</li><li>Knuth-Morris-Pratt Algorithm（KMP Algorithm)</li></ul><p>The algorithm always consists with two steps: <strong>Preprocessing</strong> and <strong>Matching</strong>, and the total runtime will be accordingly the sum of two procedures.</p><blockquote><p>Naive String Matching: O((n-m)m)<br>KMP: O(m + n)<br>Such algorithms are all doing preprocessings on the pattern to boost the searching procedure and the best runtime perfomance will be O(m) on preprocessing where m represents the length of the pattern. On contrary, is there a preprocessing which can be applied on <strong>text</strong> to speed up the whole process? This is the key reason why I am moving to <strong>suffix tree</strong>, which is a data structure doing preprocessing on text.<br><br></p></blockquote><h2 id="Suffix-Tree"><a href="#Suffix-Tree" class="headerlink" title="Suffix Tree"></a>Suffix Tree</h2><p>The previous post used to introduce a prefix tree:<br><img src="/2019/07/22/Suffix-Tree/prefix_tree.JPG" alt="prefix tree sample"><br>Individual nodes branch out from the same prefix. As you can see, there are some nodes which only have one child. Let’s try to compress them together:<br><img src="/2019/07/22/Suffix-Tree/Compressed_PrefixTree.JPG" alt="prefix tree sample"><br>After the compression, we get a <strong>Compressed Prefix Tree</strong>. A compressed prefix tree, also called compressed tire is the fundamental of suffix tree. Besides, the key values stored in each nodes of a suffix tree is all the possible suffix.</p><p>For example, for a single word (<strong>Text</strong>) <code>banana\0</code>, we have the following set of suffix:</p><pre><code>banana\0anana\0nana\0ana\0na\0a\0\0</code></pre><p>Construct a prefix tree using the above key word:<br><img src="/2019/07/22/Suffix-Tree/Banana_PrefixTree.JPG" alt="Banana Prefix Tree"><br>Afterwards, compress it:<br><img src="/2019/07/22/Suffix-Tree/Banana_SuffixTree.JPG" alt="Banana Suffix Tree"><br>Here we get a suffix tree!</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Suffix tree is a data structure aimming at solving &lt;strong&gt;string&lt;/strong&gt; related problems in &lt;strong&gt;linear time&lt;/strong&gt;&lt;br&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Suffix Tree" scheme="https://ohyoooo.github.io/tags/Suffix-Tree/"/>
+    
+  </entry>
   
   <entry>
     <title>Prefix Tree</title>
