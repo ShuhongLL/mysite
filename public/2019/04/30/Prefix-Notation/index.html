@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   
@@ -126,7 +126,7 @@
            ( else ( + ( fib ( - n 1 ) )
                       ( fib ( - n 2 ) )))))
 </code></pre>
-<p>You may find out that this procedure is not really efficient because to compute <strong>fib( - n 1)</strong>, <strong>fib( - n 2)</strong> has to be computed one more time which causes duplicated work.<br><img src="/2019/04/30/Prefix-Notation/images/treeRecursion.png" alt="Tree Recursion"><br>Therefore, instead of <strong><em>Tree Recursion</em></strong>, let’s try to convert it to be <strong><em>Linear Recursion</em></strong>. Reasign the sum of <strong>a</strong> and <strong>b</strong> to <strong>a</strong>, and the previous <strong>a</strong> to <strong>b</strong>:</p>
+<p>You may find out that this procedure is not really efficient because to compute <strong>fib( - n 1)</strong>, <strong>fib( - n 2)</strong> has to be computed one more time which causes duplicated work.<br><img src="../images/treeRecursion.png" alt="Tree Recursion"><br>Therefore, instead of <strong><em>Tree Recursion</em></strong>, let’s try to convert it to be <strong><em>Linear Recursion</em></strong>. Reasign the sum of <strong>a</strong> and <strong>b</strong> to <strong>a</strong>, and the previous <strong>a</strong> to <strong>b</strong>:</p>
 <pre><code class="python">( define ( fib n )
     ( iterate 1 0 n ))
 
@@ -165,7 +165,8 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/30/Prefix-Notation/" data-id="cjyedivun0006t8aogaj6kwbl" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/04/30/Prefix-Notation/" data-id="cjysjf6ek000aanylqrff1d3k"
+         class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functional-Programming/">Functional Programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Lisp/">Lisp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Prefix-Notation/">Prefix Notation</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Scheme/">Scheme</a></li></ul>
 
