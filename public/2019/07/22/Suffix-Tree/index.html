@@ -51,6 +51,16 @@
       
 
       
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/SuffixTree_Cover.JPG" itemprop="image">
+        
+      
+    </div>
+  </div>
+
 
       
         <p>Suffix tree is a data structure aimming at solving <strong>string</strong> related problems in <strong>linear time</strong><br><a id="more"></a></p>
@@ -86,125 +96,149 @@ a\0
 <p>After finishing the procudure of the first character, let’s move forward to the second one <code>b</code>:<br><img src="/2019/07/22/Suffix-Tree/PrefixTree_ab.JPG" alt="Sample &quot;abc&quot; -- ab"><br>Then do the same thing on the last character <code>c</code>:<br><img src="/2019/07/22/Suffix-Tree/PrefixTree_abc.JPG" alt="Sample &quot;abc&quot; -- abc"><br>We maintain a pointer pointing to the current end character of the text. Each time when we add a new edge for a new character, we will update the # point. Thus, the runtime for each procedure is O(1) and hence the overall runtime to construct this “abc” suffix tree will be O(n).<br><br></p>
 <h2 id="“abcabxabcd”"><a href="#“abcabxabcd”" class="headerlink" title="“abcabxabcd”"></a>“abcabxabcd”</h2><p>“abc” is a really simple example since there is no duplicated characters in the text. Now let’s consider a more complicated text <code>abcabxabcd</code>. Before we get started to construct, there are two more concepts that need to be introduced</p>
 <ul>
-<li><strong>active point</strong>: a structure indicates <code>parent_node</code>, <code>active_value</code> and <code>offset</code></li>
+<li><strong>active point</strong>: a structure indicates <code>active_node</code>, <code>active_value</code> and <code>offset</code></li>
 <li><strong>remainder</strong>: remaining characters to be inserted</li>
 </ul>
 <pre><code>active_point = (root, &#39;&#39;, 0)
 remainder = 0
-</code></pre><h3 id="The-first-character-‘a’"><a href="#The-first-character-‘a’" class="headerlink" title="The first character, ‘a’"></a>The first character, ‘a’</h3><p>We append <code>a</code> directly to the root node</p>
-<blockquote>
+</code></pre><p><br></p>
+<h3 id="The-first-character-gt-a"><a href="#The-first-character-gt-a" class="headerlink" title="The first character =&gt; a"></a>The first character =&gt; <code>a</code></h3><p>We append <code>a</code> directly to the root node</p>
 <ol>
-<li>before we append the node, set remainder = remainder + 1, states that we are going to insert a new node</li>
-<li>append ‘a’ to the root node</li>
-<li>after the insertion, a new node is appended to the tree, hence remainder = remainder - 1</li>
-<li>after the whole procudure, active_point = (root, ‘’, 0), remainder = 0<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-a.JPG" alt="Sample &quot;abcabx&quot; -- abc"></li>
+<li>Before we append the node, set <code>remainder = remainder + 1</code> (0 + 1), states that we are going to insert a new node</li>
+<li>Append ‘a’ to the root node</li>
+<li>After the insertion, a new node is appended to the tree, hence <code>remainder = remainder - 1</code> (1 - 1)</li>
+<li>After the whole procudure:<pre><code>active_point = (root, &#39;&#39;, 0)
+remainder = 0
+</code></pre></li>
 </ol>
-</blockquote>
-<h3 id="The-second-character-‘b’"><a href="#The-second-character-‘b’" class="headerlink" title="The second character, ‘b’"></a>The second character, ‘b’</h3><blockquote>
-<ol>
-<li>before we append the node, set remainder = remainder + 1, states that we are going to insert a new node</li>
-<li>expend every leave node; hence change ‘a’ to ‘ab’</li>
-<li>query the current node, which is the root node, since there is no prefix starts with ‘b’, we need to create a new node and insert ‘b’. (The prefix for the previous prefix will be [a, ab] now)</li>
-<li>after the insertion, a new node is appended to the tree, hence remainder = remainder - 1</li>
-<li>after the whole procudure, active_point = (root, ‘’, 0), remainder = 0<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-ab.JPG" alt="Sample &quot;abcabx&quot; -- abc"></li>
+<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-a.JPG" alt="Sample &quot;abcabx&quot; -- abc"></p>
+<h3 id="The-second-character-gt-b"><a href="#The-second-character-gt-b" class="headerlink" title="The second character =&gt; b"></a>The second character =&gt; <code>b</code></h3><ol>
+<li>Before we append the node, set <code>remainder = remainder + 1</code> (0 + 1), states that we are going to insert a new node</li>
+<li>Expend every leave node; hence change ‘a’ to ‘ab’</li>
+<li>Query the current node, which is the root node, since there is no prefix starts with ‘b’, we need to create a new node and insert ‘b’. (The prefix for the previous prefix will be [a, ab] now)</li>
+<li>After the insertion, a new node is appended to the tree, hence <code>remainder = remainder - 1</code> (1 - 1)</li>
+<li>After the whole procudure:<pre><code>active_point = (root, &#39;&#39;, 0)
+remainder = 0
+</code></pre></li>
 </ol>
-</blockquote>
-<h3 id="The-third-character-‘c’"><a href="#The-third-character-‘c’" class="headerlink" title="The third character, ‘c’"></a>The third character, ‘c’</h3><blockquote>
-<p>same as the procedure of inserting ‘b’<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abc.JPG" alt="Sample &quot;abcabx&quot; -- abc"></p>
-</blockquote>
-<h3 id="The-fourth-character-‘a’-again"><a href="#The-fourth-character-‘a’-again" class="headerlink" title="The fourth character, ‘a’ again"></a>The fourth character, ‘a’ again</h3><p>This time we encounter the same character we have already inserted</p>
-<blockquote>
+<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-ab.JPG" alt="Sample &quot;abcabx&quot; -- abc"></p>
+<h3 id="The-third-character-gt-c"><a href="#The-third-character-gt-c" class="headerlink" title="The third character =&gt; c"></a>The third character =&gt; <code>c</code></h3><p>Same as the procedure of inserting ‘b’<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abc.JPG" alt="Sample &quot;abcabx&quot; -- abc"></p>
+<h3 id="The-fourth-character-gt-a-again"><a href="#The-fourth-character-gt-a-again" class="headerlink" title="The fourth character =&gt; a again"></a>The fourth character =&gt; <code>a</code> again</h3><p>This time we encounter the same character we have already inserted</p>
 <ol>
-<li>before we append the node, set remainder = remainder + 1, states that we are going to insert a new node</li>
-<li>expend every leave node; hence change ‘abc’ -&gt; ‘abca’, ‘bc’ -&gt; ‘bca’, ‘c’ -&gt; ‘ca’</li>
-<li>query the current node, which is the root node, find out the there already exist a prefix which starts from ‘a’; hence we modify the <code>active_point</code>:<blockquote>
-<p><strong>parent_node</strong>: the parent node is still root node hence remain unchanged<br><strong>active_value</strong>: the current value will be set to ‘a’<br><strong>offset</strong>: the offset of the current value, which is 1 (states the first character in the prefix)</p>
+<li>Before we append the node, set <code>remainder = remainder + 1</code> (0 + 1)</li>
+<li>Expend every leave node; hence change ‘abc’ -&gt; ‘abca’, ‘bc’ -&gt; ‘bca’, ‘c’ -&gt; ‘ca’</li>
+<li>Query the current node, which is the root node, find out the there already exist a prefix which starts from ‘a’; hence we modify the <code>active_point</code>:<pre><code>active_point = (root, &#39;a&#39;, 1)
+remainder = 1
+</code></pre><blockquote>
+<p><strong>active_node</strong>: the parent node is still root node hence remain unchanged<br><strong>active_value</strong>: the current value will be set to ‘a’<br><strong>offset</strong>: the offset of the current value, which is 1 (states the first character in the prefix)<br><strong>remainder</strong> after the insertion, no new node is inserted in the tree, hence remainder keep the same (remainder = 1)</p>
 </blockquote>
 </li>
-<li>after the insertion, no new node is inserted in the tree, hence remainder keep the same (remainder = 1)</li>
-<li>after the whole procudure, active_point = (root, ‘a’, 1), remainder = 1</li>
 </ol>
-</blockquote>
-<h3 id="The-fifth-character-‘b’-again"><a href="#The-fifth-character-‘b’-again" class="headerlink" title="The fifth character, ‘b’ again"></a>The fifth character, ‘b’ again</h3><p>Still duplicated with the previous nodes</p>
-<blockquote>
+<h3 id="The-fifth-character-gt-b-again"><a href="#The-fifth-character-gt-b-again" class="headerlink" title="The fifth character =&gt; b again"></a>The fifth character =&gt; <code>b</code> again</h3><p>Still duplicated with previous nodes</p>
 <ol>
-<li>before we append the node, set remainder = remainder + 1, states that we are going to insert a new node</li>
-<li>expend every leave node; hence change ‘abca’ -&gt; ‘abcab’, ‘bca’ -&gt; ‘bcab’, ‘ca’ -&gt; ‘cab’, <strong>active_node</strong>[1] = ‘a’ -&gt; ‘ab’</li>
-<li>query the current node, which is the root node, find out the there already exist a prefix which starts from ‘ab’ (which is exactly ‘ab’); hence we modify the <code>active_point</code>:<blockquote>
-<p><strong>parent_node</strong>: the parent node is still root node hence remain unchanged<br><strong>active_value</strong>: the active value will be ‘ab’<br><strong>offset</strong>: the offset of the current value, which is 2</p>
+<li><code>remainder = remainder + 1</code> (1 + 1)</li>
+<li>Expend every leave node; hence change ‘abca’ -&gt; ‘abcab’, ‘bca’ -&gt; ‘bcab’, ‘ca’ -&gt; ‘cab’, <code>active_point[1] = &#39;a&#39; -&gt; &#39;ab&#39;</code></li>
+<li>Start from <strong>active_node</strong>, query the <strong>active_value</strong> in its prefix and the prefix of its sub-nodes. Modify <strong>active_point</strong> to the following:<pre><code>active_point = (root, &#39;ab&#39;, 2)
+remainder = 2
+</code></pre><blockquote>
+<p><strong>active_node</strong>: the active node is still root node hence remain unchanged.<br><strong>active_value</strong>: the active value has been expended to ‘ab’.<br><strong>offset</strong>: ‘ab’ already exists in node ‘ab’ (which is the sub-node of root node), the offset of matched index is 2.<br><strong>remainder</strong>: after the insertion, no new node is inserted in the tree, hence remainder keep the same</p>
 </blockquote>
 </li>
-<li>after the insertion, no new node is inserted in the tree, hence remainder keep the same (remainder = 1)</li>
-<li>after the whole procudure, active_point = (root, ‘ab’, 2), remainder = 2</li>
 </ol>
-</blockquote>
 <p>By this step, we still have the same amount of nodes inserted into the tree (3 nodes)<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcab.JPG" alt="Sample &quot;abcabx&quot; -- abcab"></p>
-<h3 id="The-sixth-character-‘x’"><a href="#The-sixth-character-‘x’" class="headerlink" title="The sixth character, ‘x’"></a>The sixth character, ‘x’</h3><blockquote>
-<ol>
-<li>before we append the node, set remainder = remainder + 1, states that we are going to insert a new node (remainder = 3 now)</li>
-<li>expend every leave node; hence change ‘abcab’ -&gt; ‘abcabx’, ‘bcab’ -&gt; ‘bcabx’, ‘cab’ -&gt; ‘cabx’, <strong>active_node</strong>[1] = ‘ab’ -&gt; ‘abx’</li>
-<li>query the current node, which is the root node, find out the there isn’t a prefix which starts from ‘abx’; hence we <strong>split</strong>:<blockquote>
-<p><strong>parent_node</strong>: start from the parent node, query its sequential sub nodes<br><strong>active_value</strong>: look for the sub prefix which starts from the active_value ‘abx’ (which will be ‘abcabx’)<br><strong>offset</strong>: use the offset the locate the split point (which is the the second node)<br>modify <strong>active_node</strong>: parent_node = ‘root’, active_value = ‘bx’, offset = 1<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx.JPG" alt="Sample &quot;abcabx&quot; -- abcabx"></p>
-</blockquote>
-</li>
-<li>after the insertion, a new node is inserted in the tree, hence remainder = remainder - 1 (remainder = 2)</li>
-<li>The remainder is still greater than 0; hence we keep insert ‘bx’<blockquote>
-<p>do the same thing here, start from the <strong>parent_node</strong>, query the sub prefix ‘bx’. Found ‘bx’ in the prefix ‘bcabx’; hence split the node according to <strong>offset</strong><br>Split the target node, Since a new node is inserted, remainder = remainder - 1 (remainder = 1 now)<br>modify <strong>active_node</strong>: parent_node = ‘root’, active_value = ‘x’, offset = 0</p>
-</blockquote>
-</li>
-<li>after the procudure, active_point = (root, ‘x’, 0), remainder = 1. Since remainder is still greater than 0, we have to do another insertion to reduce it to zero. Append ‘x’ directly to the current node (which is ‘b’).<br>a new node is inserted, hence remainder = remainder - 1 (which is 0 now)<br><strong>active_node</strong>: parent_node = ‘root’, active_value = ‘’, offset = 0; <strong>remainder</strong>: 0<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx-2.JPG" alt="Sample &quot;abcabx&quot; -- abcabx - 2"></li>
+<h3 id="The-sixth-character-gt-x"><a href="#The-sixth-character-gt-x" class="headerlink" title="The sixth character =&gt; x"></a>The sixth character =&gt; <code>x</code></h3><ol>
+<li><code>remainder = remainder + 1</code> (2 + 1).</li>
+<li>Expend every leave node; hence change ‘abcab’ -&gt; ‘abcabx’, ‘bcab’ -&gt; ‘bcabx’, ‘cab’ -&gt; ‘cabx’, <code>active_point[1] = &#39;ab&#39; -&gt; &#39;abx&#39;</code>.</li>
+<li>Start from <strong>active_node</strong>, query the <strong>active_value</strong> in its prefix and the prefix of its sub-nodes. Since there isn’t a prefix which perfectly matches the pattern ‘abx’; hence this is the point where to <strong>split</strong>:</li>
 </ol>
-</blockquote>
-<p>After the insertion of the sixth character ‘x’, we splitted two nodes.</p>
-<blockquote>
-<p>Is there a relationship between two splitted node ‘ab’ and ‘b’?<br>When we separated ‘ab’ and ‘b’, we modified the previous ‘abcabx’ node first, then modified the second node ‘bcabx’. If we encounter another string starting with ‘abk’, then after ‘abk’ is inserted, we definately need to insert ‘bk’ as well. Repeating the same query will slow down the whole procedure; thus, we can add a link from ‘ab’ to ‘b’ to indicate that if an update is made in node ‘ab’, then another update will be followed on the link target ‘b’ afterwards.<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx-3.JPG" alt="Sample &quot;abcabx&quot; -- abcabx - 3"></p>
-</blockquote>
-<h3 id="The-seventh-character-‘a’"><a href="#The-seventh-character-‘a’" class="headerlink" title="The seventh character, ‘a’"></a>The seventh character, ‘a’</h3><p>Same as the fourth insertion ‘a’</p>
-<blockquote>
-<p>active_point = (root, ‘a’, 1), remainder = 1</p>
-</blockquote>
-<h3 id="The-eighth-character-‘b’"><a href="#The-eighth-character-‘b’" class="headerlink" title="The eighth character, ‘b’"></a>The eighth character, ‘b’</h3><p>Same as the fifth insertion ‘b’</p>
-<blockquote>
-<p>active_point = (root, ‘ab’, 2), remainder = 2</p>
-</blockquote>
-<h3 id="The-ninth-character-‘c’"><a href="#The-ninth-character-‘c’" class="headerlink" title="The ninth character, ‘c’"></a>The ninth character, ‘c’</h3><p>When we try to insert ‘c’</p>
-<blockquote>
+<h3 id="Split"><a href="#Split" class="headerlink" title="Split"></a>Split</h3><p>When we find out the exact place where the prefix starts to mismatch the pattern, then we need to insert new nodes to our tree to append this new suffix character. For example, prefix ‘abc’ and pattern ‘abx’ share the same two characters ‘ab’ at the beginning and mismatch at the third character (offset = 3), then we can simply split at the third index to make a tree like ‘ab’ -&gt; [‘c’, ‘x’]. We will do the same thing here:</p>
 <ol>
-<li>remainder= remainder + 1 (3)</li>
+<li>We already know the offset (which is active_point[2]).</li>
+<li>Split node <strong>‘abcabx’ to ‘ab’ -&gt; [‘cabx’, ‘x’]</strong>.</li>
+<li>Modify <strong>active_point</strong> and <strong>remainder</strong>:<pre><code>active_point = (root, &#39;bx&#39;, 1)
+remainder = 2
+</code></pre><blockquote>
+<p><strong>active_node</strong>: still root node<br><strong>active_value</strong>: ‘abx’ has been inserted, then we need to insert ‘bx’, then ‘x’ and so on so far<br><strong>offset</strong>: active_point[1] changes from ‘abx’ to ‘bx’, then the offset will also shift from 2 to 1<br><strong>remainder</strong>: a new node is inserted, hence <code>remainder = remainder - 1</code> (3 - 1)</p>
+<blockquote>
+<p><strong>Why do we change offset as well?</strong><br>This is actually a trick to reduce runtime. For each step of insertion, we will make an sub suffix tree by characters we already have (inserted). For example, if we have a string ‘abc’ and we have inserted the last character ‘c’ in the suffix tree, then all possible suffix of string (text) ‘abc’, which is ‘abc’, ‘bc’ and ‘c’ must exist in the suffix tree, either implicitly (have not splitted yet, like the fourth insertion above) or explicitly (has its own node). Hence, by inserting ‘ab +x’ and splitting the node, we know that ‘b +x’ must exist in the tree; therefore, we reduce the offset by 1 to state that the offset of the next split will start from the first character of the node ‘b…’.</p>
+</blockquote>
+</blockquote>
+</li>
+</ol>
+<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx.JPG" alt="Sample &quot;abcabx&quot; -- abcabx"></p>
+<ol start="4">
+<li>The remainder is still greater than 0; hence we will keep inserting ‘bx’. Do the same thing here, start from the <strong>parent_node</strong>, query the sub prefix ‘bx’. Found ‘bx’ in the prefix ‘bcabx’; hence split the node <strong>‘bcabx’ to ‘b’ -&gt; [‘cabx’, ‘x’]</strong></li>
+<li>Modify <strong>active_point</strong> and <strong>remainder</strong>:<pre><code>active_point = (root, &#39;x&#39;, 0)
+remainder = 1
+</code></pre><blockquote>
+<p><strong>active_node</strong>: still root node<br><strong>active_value</strong>: ‘bx’ has been inserted, then we need to insert ‘x’<br><strong>offset</strong>: active_point[1] changes from ‘bx’ to ‘x’, then the offset will also shift from 1 to 0<br><strong>remainder</strong>: a new node is inserted, hence <code>remainder = remainder - 1</code> (2 - 1)</p>
+</blockquote>
+</li>
+</ol>
+<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx-2.JPG" alt="Sample &quot;abcabx&quot; -- abcabx - 2"></p>
+<ol start="6">
+<li>Since remainder is still greater than 0, we have to do another insertion to reduce it to zero. However, the character ‘x’ hasn’t been inserted before, then we append ‘x’ directly to the root node.</li>
+<li>Modify <strong>active_point</strong> and <strong>remainder</strong>:<pre><code>active_point = (root, &#39;&#39;, 0)
+remainder = 0
+</code></pre><blockquote>
+<p><strong>active_node</strong>: still root node<br><strong>active_value</strong>: the last character ‘x’ has been inserted, reduce to empty<br><strong>remainder</strong>: a new node is inserted, hence <code>remainder = remainder - 1</code> (1- 1)</p>
+</blockquote>
+</li>
+</ol>
+<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx-3.JPG" alt="Sample &quot;abcabx&quot; -- abcabx - 3"></p>
+<p><strong>Is there a relationship between two splitted node <code>ab</code> and <code>b</code>?</strong><br>When we separated ‘ab’ and ‘b’, we modified the previous ‘abcabx’ node first, then modified the second node ‘bcabx’. If we encounter another string starting with ‘abk’, then after ‘abk’ is inserted, we definately need to insert ‘bk’ as well. Repeating the same query will slow down the whole procedure; thus, we can add a link from ‘ab’ to ‘b’ to indicate that if an update is made in node ‘ab’, then another insertion will be done on the link target ‘b’ afterwards.<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabx-4.JPG" alt="Sample &quot;abcabx&quot; -- abcabx - 4"></p>
+<h3 id="The-seventh-character-gt-a"><a href="#The-seventh-character-gt-a" class="headerlink" title="The seventh character =&gt; a"></a>The seventh character =&gt; <code>a</code></h3><p>Same as the fourth insertion ‘a’</p>
+<pre><code>active_point = (root, &#39;a&#39;, 1)
+remainder = 1
+</code></pre><h3 id="The-eighth-character-b"><a href="#The-eighth-character-b" class="headerlink" title="The eighth character = b"></a>The eighth character = <code>b</code></h3><p>Same as the fifth insertion ‘b’</p>
+<pre><code>active_point = (root, &#39;ab&#39;, 2)
+remainder = 2
+</code></pre><h3 id="The-ninth-character-gt-c"><a href="#The-ninth-character-gt-c" class="headerlink" title="The ninth character =&gt; c"></a>The ninth character =&gt; <code>c</code></h3><p>When we try to insert ‘c’</p>
+<ol>
+<li><code>remainder= remainder + 1</code> (3)</li>
 <li>Expand every leave node<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc.JPG" alt="Sample &quot;abcabxabc&quot; -- abcabxabc"></li>
 <li>Query ‘abc’, find ‘abc’ under the parent node ‘ab’<blockquote>
-<p>Extra Procedure:<br><strong>active_point</strong>: The node ‘cabxabc’ constains the last character of the target prefix (‘abc’), whose parent node is ‘ab’; thus, set <code>active_point[0] = &#39;ab&#39;</code>.<br><strong>active_node</strong>: set <code>active_point[1] = &#39;abc&#39;</code>.<br><strong>offset</strong>: the offset of the character ‘c’ in its node string(‘cabxabc’) which is 1. Set <code>active_point[2] = 1</code><br>After the modification, no new node is inserted, hence <strong>remainder</strong> keeps unchanged.<br>active_point = (‘ab’, ‘abc’, 1), remainder = 3</p>
+<p><strong>Extra Procedure</strong>:<br><strong>active_point</strong>: The node ‘cabxabc’ constains the last character of the target prefix (‘abc’), whose parent node is ‘ab’; thus, set <code>active_point[0] = &#39;ab&#39;</code>.<br><strong>active_node</strong>: set <code>active_point[1] = &#39;abc&#39;</code>.<br><strong>offset</strong>: the offset of the character ‘c’ in its node string(‘cabxabc’) which is 1. Set <code>active_point[2] = 1</code><br><strong>remainder</strong>: After the modification, no new node is inserted, hence <strong>remainder</strong> keeps unchanged.</p>
 </blockquote>
 </li>
 </ol>
-</blockquote>
-<h3 id="The-last-character-‘d’"><a href="#The-last-character-‘d’" class="headerlink" title="The last character, ‘d’"></a>The last character, ‘d’</h3><p>We will use the link built-up in previous steps to simplify the updates.</p>
-<blockquote>
+<pre><code>active_point = (&#39;ab&#39;, &#39;abc&#39;, 1)
+remainder = 3
+</code></pre><h3 id="The-last-character-gt-d"><a href="#The-last-character-gt-d" class="headerlink" title="The last character =&gt; d"></a>The last character =&gt; <code>d</code></h3><p>We will use the link built-up in previous steps to simplify the updates.</p>
 <ol>
-<li>remainder = remainder + 1 (4)</li>
-<li>expand every leave nodes</li>
-<li>query the current parent node (‘ab’), find if there exist any prefix contains the target ‘abcd’? Since there isn’t any prefix match the pattern, then this will be a split point.</li>
+<li><code>remainder = remainder + 1</code> (3 + 1)</li>
+<li>Expand every leave nodes</li>
+<li>Query the current parent node (‘ab’), find if there exist any prefix contains the target ‘abcd’? Since there isn’t any prefix match the pattern, then this will be a split point.</li>
 </ol>
+<h3 id="Split-1"><a href="#Split-1" class="headerlink" title="Split"></a>Split</h3><blockquote>
+<p><strong>active_point[0] = ‘ab’</strong>: start from the curent parent node (‘ab’), looking into its sub nodes.<br><strong>active_point[1] = ‘abcd’</strong>: ‘d’ is inserted into the active value .<br><strong>active_point[2] = 1</strong>: parent node ‘ab’ already contains ‘ab’, and its sub-node ‘cabxabcd’ starts from the third character ‘c’ at offset 0. Then the second character of ‘cabxabcd’, which is ‘a’ mismatches the following target ‘d’; hence this is where to be splitted, at offset 1 (of ‘cabxabcd’).</p>
 </blockquote>
-<blockquote>
-<blockquote>
-<p><strong>Split Operation</strong><br><strong>active_point[0] = ‘ab’</strong>: start from the curent parent node (‘ab’), looking into its sub nodes.<br><strong>active_point[1] = ‘abcd’</strong>: ‘d’ is inserted into the target prefix .<br><strong>active_point[2] = 1</strong>: parent node ‘ab’ already contains ‘ab’, and its sub-node ‘cabxabcd’ starts from the third character ‘c’ at offset 0. Then the second character of ‘cabxabcd’, which is ‘a’ mismatches the following target ‘d’; hence this is where to be splitted, at offset 1 (of ‘cabxabcd’).</p>
 <ol>
-<li>split ‘cabxabcd’ to c -&gt; [abxabcd, d]</li>
-<li>Since a new node has been inserted, then <strong>remainder = remainder - 1</strong> (3). Remainder is still greater than 0, we still cannot stop here.<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-1.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 1"></li>
-<li>active_point[0] (‘ab’) has a link pointing to ‘b’. We change the active_point according to the link target.<br><strong>active_point[0] = ‘b’</strong><br><strong>active_point[1] = ‘bcd’</strong><br><strong>active_point[2] remains unchange</strong></li>
-<li>start from active_point[0], query its sub-nodes. ‘b’ is the parent node and its sub-node ‘cabxabcd’ contains ‘c’ at offset 0 and mismatch at offset 1; hence we split its sub-node ‘cabxabcd’ to ‘c’ -&gt; [abxabcd, d]. Since a new node is inserted, <strong>remainder = remainder - 1</strong> (2) and <strong>active_point[1] = ‘cd’</strong><br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-2.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 2"></li>
-<li>At this point, active_point reduce to empty and does not have any link, then we reset **active_point[0] = ‘root’</li>
-<li>Insert ‘cd’, start from the current node (active_point[0]), which is the ‘root’, query its sub-nose for active_point[1] (‘cd’). Node ‘cabxabcd’ contains target character ‘c’ and mismatches at offset 1. Split ‘cabxabcd’ to c -&gt; [abxabcd, d]. <strong>remainder = remainder - 1</strong> (1).<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-3.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 3"></li>
+<li>Split <strong>‘cabxabcd’ to c -&gt; [abxabcd, d]</strong></li>
+<li>Since a new node has been inserted, then <code>remainder = remainder - 1</code> (3). Remainder is still greater than 0, we still cannot stop here.<pre><code>active_point = (&#39;ab&#39;, &#39;abcd&#39;, 1)
+remainder = 3
+</code></pre></li>
 </ol>
+<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-1.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 1"></p>
+<ol start="3">
+<li><p>active_point[0] (‘ab’) has a link pointing to ‘b’. We change the active_point according to the link target.</p>
+<blockquote>
+<p><strong>active_point[0] = ‘b’</strong><br><strong>active_point[1] = ‘bcd’</strong><br><strong>active_point[2] remains unchange</strong></p>
 </blockquote>
-</blockquote>
-<p><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-4.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 4"></p>
+</li>
+<li><p>start from active_point[0], query its sub-nodes. ‘b’ is the parent node and its sub-node ‘cabxabcd’ contains ‘c’ at offset 0 and mismatch at offset 1; hence we split its sub-node <strong>‘cabxabcd’ to ‘c’ -&gt; [abxabcd, d]</strong>. Since a new node is inserted, <code>remainder = remainder - 1</code> (2) and <code>active_point[1] = &#39;cd&#39;</code><br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-2.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 2"></p>
+</li>
+<li>At this point, <strong>active_node</strong> reduce to empty and does not have any link, then we reset **active_point[0] = ‘root’</li>
+<li><p>Insert ‘cd’, start from the current node (active_point[0]), which is the ‘root’, query its sub-nose for active_point[1] (‘cd’). Node ‘cabxabcd’ contains target character ‘c’ and mismatches at offset 1. Split <strong>‘cabxabcd’ to c -&gt; [abxabcd, d]</strong>. <strong>remainder = remainder - 1</strong> (1).<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-3.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 3"></p>
+</li>
+<li><p>Finally insert ‘d’ directly on root node and <code>remainder = remainder - 1</code> which is 0<br><img src="/2019/07/22/Suffix-Tree/SuffixTree-Sample-abcabxabc-10-4.JPG" alt="Sample &quot;abcabxabc&quot; -- 10 - 4"></p>
+</li>
+</ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/07/22/Suffix-Tree/" data-id="cjysjf6el000canyle513doji"
+      <a data-url="https://ohyoooo.github.io/2019/07/22/Suffix-Tree/" data-id="cjyr0o3tg000bvuyllonk4oxs"
          class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Suffix-Tree/">Suffix Tree</a></li></ul>
