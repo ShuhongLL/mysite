@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ohyoooo.github.io/"/>
-  <updated>2019-10-01T08:50:10.098Z</updated>
+  <updated>2019-10-01T08:56:38.432Z</updated>
   <id>https://ohyoooo.github.io/</id>
   
   <author>
@@ -17,11 +17,11 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>An Brew Error When Upgrade Mongodb to 4.2</title>
+    <title>A Brew Error When Upgrade Mongodb to 4.2</title>
     <link href="https://ohyoooo.github.io/2019/10/01/An-Brew-Error-When-Upgrade-Mongodb-to-4-2/"/>
     <id>https://ohyoooo.github.io/2019/10/01/An-Brew-Error-When-Upgrade-Mongodb-to-4-2/</id>
     <published>2019-10-01T08:38:05.000Z</published>
-    <updated>2019-10-01T08:50:10.098Z</updated>
+    <updated>2019-10-01T08:56:38.432Z</updated>
     
     <content type="html"><![CDATA[<p>When I tried to upgrade my old mongodb to 4.2 through <code>homebrew</code>:</p><pre><code>brew tap mongodb/brew</code></pre><a id="more"></a><p>then:</p><pre><code>brew install mongodb-community@4.2</code></pre><p>I encountered a strange error saying:</p><pre><code>Error: parent directory is world writable but not sticky</code></pre><p>That is because of the privilege issue of writing to /tmp,<br>do the following will solve the problem:</p><pre><code>sudo chmod +t /private/tmp</code></pre><p>Remeber to link to the new version after the installation:</p><pre><code>brew link --overwrite mongodb-community</code></pre>]]></content>
     

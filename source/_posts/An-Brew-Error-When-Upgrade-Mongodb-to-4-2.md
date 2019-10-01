@@ -1,5 +1,5 @@
 ---
-title: An Brew Error When Upgrade Mongodb to 4.2
+title: A Brew Error When Upgrade Mongodb to 4.2
 date: 2019-10-01 17:38:05
 tags: [Brew, Mongo]
 photos: ["../images/mongodb_cover.JPG"]
