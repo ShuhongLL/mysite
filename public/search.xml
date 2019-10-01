@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[Hello World]]></title>
-    <url>%2F2019%2F07%2F31%2Fhello-world%2F</url>
-    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post$ hexo new &quot;My New Post&quot; More info: Writing Run server$ hexo server More info: Server Generate static files$ hexo generate More info: Generating Deploy to remote sites$ hexo deploy More info: Deployment]]></content>
+    <title><![CDATA[An Brew Error When Upgrade Mongodb to 4.2]]></title>
+    <url>%2F2019%2F10%2F01%2FAn-Brew-Error-When-Upgrade-Mongodb-to-4-2%2F</url>
+    <content type="text"><![CDATA[When I tried to upgrade my old mongodb to 4.2 through homebrew: brew tap mongodb/brew then: brew install mongodb-community@4.2 I encountered a strange error saying: Error: parent directory is world writable but not sticky That is because of the privilege issue of writing to /tmp,do the following will solve the problem: sudo chmod +t /private/tmp Remeber to link to the new version after the installation: brew link --overwrite mongodb-community]]></content>
+      <tags>
+        <tag>Brew</tag>
+        <tag>Mongo</tag>
+      </tags>
   </entry>
   <entry>
     <title><![CDATA[Suffix Tree]]></title>
@@ -100,5 +104,10 @@
         <tag>Saga</tag>
         <tag>React</tag>
       </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Hello World]]></title>
+    <url>%2F2019%2F04%2F27%2Fhello-world%2F</url>
+    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post$ hexo new &quot;My New Post&quot; More info: Writing Run server$ hexo server More info: Server Generate static files$ hexo generate More info: Generating Deploy to remote sites$ hexo deploy More info: Deployment]]></content>
   </entry>
 </search>
