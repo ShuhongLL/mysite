@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Configure Kerberos Authentication in Golang |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Configure-Kerberos-Authentication-in-Golang" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Configure Kerberos Authentication in Golang
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" class="article-date">
+  <time datetime="2019-10-10T10:54:37.000Z" itemprop="datePublished">2019-10-10</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/apache-kafka.png" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <a id="more"></a>
+<h2 id="Breif-introduction-of-Kerberos"><a href="#Breif-introduction-of-Kerberos" class="headerlink" title="Breif introduction of Kerberos"></a>Breif introduction of Kerberos</h2><h2 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h2><p>There are multipe clients available for Golang, and you can refer to <a href="https://cwiki.apache.org/confluence/display/KAFKA/Clients" target="_blank" rel="noopener">here</a> to have a breif look. Usually we intent to choose libraries which are purely coded in the sme programming language to avoid importing unnecessary dependencies. Unfortunately, by the time I wrote this article, I haven’t found out a library which is purely written by Go, therefore I choose a cgo library supported by <a href="https://github.com/confluentinc/confluent-kafka-go" target="_blank" rel="noopener">Confluent</a>, this library refers to a C library <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener">librdkafka</a>.</p>
+<h2 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h2><p>For the reason that I couldn’t refresh my keytab on MacOS (most likely because macos disable UDP connection by default and hence cannot recognize kdc in my realms), I switched to linux (for dockerfile, linux is also a good choice :P).</p>
+<p>The Go version is required to be at least <code>1.12</code></p>
+<p>Firstly, since our client refering to <code>librdkafka</code>, we need to install librdkafka:</p>
+<pre><code>wget -qO - https://packages.confluent.io/deb/5.3/archive.key | apt-key add - &amp;&amp; \
+add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 stable main&quot;
+</code></pre><p>Then install:</p>
+<pre><code>apt-get install -y librdkafka-dev
+</code></pre><p>I am going to use <code>GSSAPI</code> as <code>SASL</code> authentication and kerberos <code>krb</code> configuration hence need to import a few more tools:</p>
+<pre><code>apt-get install -y libsasl2-modules-gssapi-mit libsasl2-dev
+apt-get install -yqq krb5-user libpam-krb5
+</code></pre><p><code>libsasl2-modules-gssapi-mit</code> and <code>libsasl2-dev</code> are specified to GSSAPI authentication, if you are using other mechanism (for example PLAIN or SCRAM-SHA-256), please refer to corresponding tools.</p>
+<p>And double check if you have <code>ca-certificates</code> installed (Not sure why, but without ca-certificates, krb configuration cannot be set)</p>
+<h2 id="Create-a-Client"><a href="#Create-a-Client" class="headerlink" title="Create a Client"></a>Create a Client</h2><pre><code class="go">import kafka &quot;github.com/confluentinc/confluent-kafka-go/kafka&quot;
+
+client, err := kafka.NewConsumer(&amp;kafka.ConfigMap{
+    // Avoid connecting to IPv6 brokers:
+    // when using localhost brokers on OSX, since the OSX resolver
+    // will return the IPv6 addresses first.
+    // You typically don&#39;t need to specify this configuration property.
+    // &quot;broker.address.family&quot;:      &quot;v4&quot;,
+    &quot;bootstrap.servers&quot;:          &quot;[Server host:port]&quot;,
+    &quot;group.id&quot;:                   &quot;[Group id]&quot;,
+    &quot;security.protocol&quot;:          &quot;SASL_PLAINTEXT&quot;,
+    &quot;session.timeout.ms&quot;:         6000,
+    &quot;sasl.mechanism&quot;:             &quot;GSSAPI&quot;,
+    &quot;auto.offset.reset&quot;:          &quot;earliest&quot;,
+    &quot;sasl.kerberos.service.name&quot;: &quot;[Service name]&quot;,
+    &quot;sasl.kerberos.keytab&quot;:       &quot;[Key tab location]&quot;,
+    &quot;sasl.kerberos.principal&quot;:    &quot;[Principal]&quot;,
+    &quot;sasl.kerberos.kinit.cmd&quot;:    &quot;kinit -R -t \&quot;%{sasl.kerberos.keytab}\&quot; -k %{sasl.kerberos.principal}&quot;,
+})
+
+</code></pre>
+<p>For here, I use <code>keytab</code> to authorize which need to configured on kafka server side. Initially, we can use <code>username</code> and <code>password</code> to authorize.</p>
+<pre><code>    &quot;sasl.username&quot;: username,
+    &quot;sasl.password&quot;: password
+</code></pre><p>Other configuration fields can be referred to <a href="https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md" target="_blank" rel="noopener">here</a></p>
+<h2 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h2><p>Well, if you are a lazy person like me, here is the dockerfile :D</p>
+<pre><code># refer to a cgo library maintained by Confluent: https://github.com/confluentinc/confluent-kafka-go
+# which requires a C dependency librdkafka-dev: https://github.com/edenhill/librdkafka
+# The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian.
+FROM ubuntu
+
+ENV http_proxy=
+ENV https_proxy=
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install the C lib for kafka
+RUN apt-get update &amp;&amp; \
+    apt-get install -y --no-install-recommends apt-utils wget gnupg software-properties-common &amp;&amp; \
+    apt-get install -y apt-transport-https ca-certificates git curl openssl libsasl2-modules-gssapi-mit libsasl2-dev &amp;&amp; \
+    apt-get install -yqq krb5-user libpam-krb5 &amp;&amp; \
+# import source repository from confluent, check the latest version on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+    wget -qO - https://packages.confluent.io/deb/5.3/archive.key | apt-key add - &amp;&amp; \
+    add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 stable main&quot; &amp;&amp; \
+# import the librdkafka-dev from confluent source repository
+# confluent-kafka-go always requires the latest librdkafka-dev library
+# If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,
+# please check the latest source repositary on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+    apt-get install -y librdkafka-dev &amp;&amp; \
+# Install Go
+    add-apt-repository ppa:longsleep/golang-backports &amp;&amp; \
+    apt-get install -y golang-1.12-go
+
+# build the library
+WORKDIR /src
+
+ADD . /src
+
+RUN GOPATH=/go GOOS=linux /usr/lib/go-1.12/bin/go build -o app &amp;&amp; \
+    mv /src/app /usr/local/bin
+
+ENV http_proxy &#39;&#39;
+ENV https_proxy &#39;&#39;
+
+EXPOSE 8000
+
+ENTRYPOINT [&quot;/usr/local/bin/app&quot;]
+
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1kn77xa0005rvaonv57hdy4" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/">Kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kerberos/">Kerberos</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/10/01/An-Brew-Error-When-Upgrade-Mongodb-to-4-2/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">A Brew Error When Upgrade Mongodb to 4.2</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
