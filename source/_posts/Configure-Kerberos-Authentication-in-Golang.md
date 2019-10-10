@@ -67,6 +67,10 @@ client, err := kafka.NewConsumer(&kafka.ConfigMap{
     "sasl.kerberos.kinit.cmd":    "kinit -R -t \"%{sasl.kerberos.keytab}\" -k %{sasl.kerberos.principal}",
 })
 
+Then export [JAAS configurations](https://docs.confluent.io/current/kafka/authentication_sasl/index.html)
+```
+export KRB5_CONFIG="/usr/local/kafka/conf/krb5/krb5.conf"
+export KAFKA_OPTS="-Djava.security.auth.login.config=/usr/local/kafka/conf/kafka/kafka_client_jaas.conf-Djava.security.krb5.conf=/usr/local/kafka/conf/krb5/krb5.conf -Dsun.security.krb5.debug=true"
 ```
 
 For here, I use `keytab` to authorize which need to configured on kafka server side. Initially, we can use `username` and `password` to authorize.
