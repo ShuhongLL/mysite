@@ -63,7 +63,7 @@
 
 
       
-        <a id="more"></a>
+        <p>Configure Kerberos authentication in Golang<br><a id="more"></a></p>
 <h2 id="Breif-introduction-of-Kerberos"><a href="#Breif-introduction-of-Kerberos" class="headerlink" title="Breif introduction of Kerberos"></a>Breif introduction of Kerberos</h2><h2 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h2><p>There are multipe clients available for Golang, and you can refer to <a href="https://cwiki.apache.org/confluence/display/KAFKA/Clients" target="_blank" rel="noopener">here</a> to have a breif look. Usually we intent to choose libraries which are purely coded in the sme programming language to avoid importing unnecessary dependencies. Unfortunately, by the time I wrote this article, I haven’t found out a library which is purely written by Go, therefore I choose a cgo library supported by <a href="https://github.com/confluentinc/confluent-kafka-go" target="_blank" rel="noopener">Confluent</a>, this library refers to a C library <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener">librdkafka</a>.</p>
 <h2 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h2><p>For the reason that I couldn’t refresh my keytab on MacOS (most likely because macos disable UDP connection by default and hence cannot recognize kdc in my realms), I switched to linux (for dockerfile, linux is also a good choice :P).</p>
 <p>The Go version is required to be at least <code>1.12</code></p>
@@ -149,7 +149,7 @@ ENTRYPOINT [&quot;/usr/local/bin/app&quot;]
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1kn77xa0005rvaonv57hdy4" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1kng5ib0002bpaog1pwr50r" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/">Kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kerberos/">Kerberos</a></li></ul>
 

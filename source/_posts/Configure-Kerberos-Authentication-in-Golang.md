@@ -5,7 +5,7 @@ tags: [Kafka, Golang, Kerberos]
 photos: ["../images/apache-kafka.png"]
 ---
 
-
+Configure Kerberos authentication in Golang
 <!-- more -->
 ## Breif introduction of Kerberos
 
