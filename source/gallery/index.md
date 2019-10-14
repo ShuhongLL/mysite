@@ -2,6 +2,16 @@
 title: My Gallery
 date: 2019-04-27 17:49:44
 albums: [
+    ["../images/IMG_Takamatsu030041.JPG", "Teshima, JP"],
+    ["../images/IMG_Takamatsu030042.JPG", "Teshima, JP"],
+    ["../images/IMG_Takamatsu030053.JPG", "Teshima, JP"],
+    ["../images/IMG_Takamatsu030056.JPG", "Naoshima, JP"],
+    ["../images/IMG_Takamatsu030050.JPG", "Naoshima, JP"],
+    ["../images/IMG_Takamatsu030055.JPG", "Shodoshima, JP"],
+    ["../images/IMG_Fuji030020.JPG", "Mt Fuji, JP"],
+    ["../images/IMG_Fuji030030.JPG", "Mt Fuji, JP"],
+    ["../images/IMG_Fuji030031.JPG", "Mt Fuji, JP"],
+    ["../images/IMG_Fuji030025.JPG", "Mt Fuji, JP"],
     ["../images/IMG_0504.JPG", "Nikko, JP"],
     ["../images/IMG_0518.JPG", "Meguro, JP"],
     ["../images/IMG_0519.JPG", "Meguro, JP"],
@@ -13,6 +23,7 @@ albums: [
     ["../images/futako010029.JPG", "Futakotawagama, JP"],
     ["../images/futako010041.JPG", "Futakotawagama, JP"],
     ["../images/IMG_0077.JPG", "Kamakura, JP"],
+    ["../images/IMG_000059.JPG", "Yokohama, JP"],
     ["../images/IMG_0222.JPG", "Roppongi Hills, JP"],
     ["../images/IMG_0226.JPG", "Roppongi Hills, JP"],
     ["../images/IMG_0444.JPG", "Nara, JP"],

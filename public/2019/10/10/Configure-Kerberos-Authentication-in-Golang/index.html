@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   
@@ -97,59 +97,43 @@ client, err := kafka.NewConsumer(&amp;kafka.ConfigMap{
     &quot;sasl.kerberos.kinit.cmd&quot;:    &quot;kinit -R -t \&quot;%{sasl.kerberos.keytab}\&quot; -k %{sasl.kerberos.principal}&quot;,
 })
 
+Then export [JAAS configurations](https://docs.confluent.io/current/kafka/authentication_sasl/index.html)
 </code></pre>
-<p>For here, I use <code>keytab</code> to authorize which need to configured on kafka server side. Initially, we can use <code>username</code> and <code>password</code> to authorize.</p>
-<pre><code>    &quot;sasl.username&quot;: username,
-    &quot;sasl.password&quot;: password
-</code></pre><p>Other configuration fields can be referred to <a href="https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md" target="_blank" rel="noopener">here</a></p>
-<h2 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h2><p>Well, if you are a lazy person like me, here is the dockerfile :D</p>
-<pre><code># refer to a cgo library maintained by Confluent: https://github.com/confluentinc/confluent-kafka-go
-# which requires a C dependency librdkafka-dev: https://github.com/edenhill/librdkafka
-# The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian.
-FROM ubuntu
+<p>export KRB5_CONFIG=”/usr/local/kafka/conf/krb5/krb5.conf”<br>export KAFKA_OPTS=”-Djava.security.auth.login.config=/usr/local/kafka/conf/kafka/kafka_client_jaas.conf-Djava.security.krb5.conf=/usr/local/kafka/conf/krb5/krb5.conf -Dsun.security.krb5.debug=true”</p>
+<pre><code>
+For here, I use `keytab` to authorize which need to configured on kafka server side. Initially, we can use `username` and `password` to authorize.
 
-ENV http_proxy=
-ENV https_proxy=
+</code></pre><pre><code>&quot;sasl.username&quot;: username,
+&quot;sasl.password&quot;: password
+</code></pre><pre><code>
+Other configuration fields can be referred to [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
 
-ENV DEBIAN_FRONTEND=noninteractive
 
-# Install the C lib for kafka
-RUN apt-get update &amp;&amp; \
-    apt-get install -y --no-install-recommends apt-utils wget gnupg software-properties-common &amp;&amp; \
-    apt-get install -y apt-transport-https ca-certificates git curl openssl libsasl2-modules-gssapi-mit libsasl2-dev &amp;&amp; \
-    apt-get install -yqq krb5-user libpam-krb5 &amp;&amp; \
-# import source repository from confluent, check the latest version on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software
-    wget -qO - https://packages.confluent.io/deb/5.3/archive.key | apt-key add - &amp;&amp; \
-    add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 stable main&quot; &amp;&amp; \
-# import the librdkafka-dev from confluent source repository
-# confluent-kafka-go always requires the latest librdkafka-dev library
-# If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,
-# please check the latest source repositary on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software
-    apt-get install -y librdkafka-dev &amp;&amp; \
-# Install Go
-    add-apt-repository ppa:longsleep/golang-backports &amp;&amp; \
-    apt-get install -y golang-1.12-go
+## Dockerfile
 
-# build the library
-WORKDIR /src
+Well, if you are a lazy person like me, here is the dockerfile :D
+</code></pre><h1 id="refer-to-a-cgo-library-maintained-by-Confluent-https-github-com-confluentinc-confluent-kafka-go"><a href="#refer-to-a-cgo-library-maintained-by-Confluent-https-github-com-confluentinc-confluent-kafka-go" class="headerlink" title="refer to a cgo library maintained by Confluent: https://github.com/confluentinc/confluent-kafka-go"></a>refer to a cgo library maintained by Confluent: <a href="https://github.com/confluentinc/confluent-kafka-go" target="_blank" rel="noopener">https://github.com/confluentinc/confluent-kafka-go</a></h1><h1 id="which-requires-a-C-dependency-librdkafka-dev-https-github-com-edenhill-librdkafka"><a href="#which-requires-a-C-dependency-librdkafka-dev-https-github-com-edenhill-librdkafka" class="headerlink" title="which requires a C dependency librdkafka-dev: https://github.com/edenhill/librdkafka"></a>which requires a C dependency librdkafka-dev: <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener">https://github.com/edenhill/librdkafka</a></h1><h1 id="The-C-dependency-librdkafka-dev-is-curretly-not-available-for-other-linux-version-except-for-ubuntu-debian"><a href="#The-C-dependency-librdkafka-dev-is-curretly-not-available-for-other-linux-version-except-for-ubuntu-debian" class="headerlink" title="The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian."></a>The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian.</h1><p>FROM ubuntu</p>
+<p>ENV http_proxy=<br>ENV https_proxy=</p>
+<p>ENV DEBIAN_FRONTEND=noninteractive</p>
+<h1 id="Install-the-C-lib-for-kafka"><a href="#Install-the-C-lib-for-kafka" class="headerlink" title="Install the C lib for kafka"></a>Install the C lib for kafka</h1><p>RUN apt-get update &amp;&amp; \<br>    apt-get install -y –no-install-recommends apt-utils wget gnupg software-properties-common &amp;&amp; \<br>    apt-get install -y apt-transport-https ca-certificates git curl openssl libsasl2-modules-gssapi-mit libsasl2-dev &amp;&amp; \<br>    apt-get install -yqq krb5-user libpam-krb5 &amp;&amp; \</p>
+<h1 id="import-source-repository-from-confluent-check-the-latest-version-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software"><a href="#import-source-repository-from-confluent-check-the-latest-version-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software" class="headerlink" title="import source repository from confluent, check the latest version on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software"></a>import source repository from confluent, check the latest version on <a href="https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software" target="_blank" rel="noopener">https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software</a></h1><pre><code>wget -qO - https://packages.confluent.io/deb/5.3/archive.key | apt-key add - &amp;&amp; \
+add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 stable main&quot; &amp;&amp; \
+</code></pre><h1 id="import-the-librdkafka-dev-from-confluent-source-repository"><a href="#import-the-librdkafka-dev-from-confluent-source-repository" class="headerlink" title="import the librdkafka-dev from confluent source repository"></a>import the librdkafka-dev from confluent source repository</h1><h1 id="confluent-kafka-go-always-requires-the-latest-librdkafka-dev-library"><a href="#confluent-kafka-go-always-requires-the-latest-librdkafka-dev-library" class="headerlink" title="confluent-kafka-go always requires the latest librdkafka-dev library"></a>confluent-kafka-go always requires the latest librdkafka-dev library</h1><h1 id="If-go-build-fail-below-because-of-the-mismatch-of-confluent-kafka-go-and-librdkafka-dev"><a href="#If-go-build-fail-below-because-of-the-mismatch-of-confluent-kafka-go-and-librdkafka-dev" class="headerlink" title="If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,"></a>If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,</h1><h1 id="please-check-the-latest-source-repositary-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software"><a href="#please-check-the-latest-source-repositary-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software" class="headerlink" title="please check the latest source repositary on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software"></a>please check the latest source repositary on <a href="https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software" target="_blank" rel="noopener">https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software</a></h1><pre><code>apt-get install -y librdkafka-dev &amp;&amp; \
+</code></pre><h1 id="Install-Go"><a href="#Install-Go" class="headerlink" title="Install Go"></a>Install Go</h1><pre><code>add-apt-repository ppa:longsleep/golang-backports &amp;&amp; \
+apt-get install -y golang-1.12-go
+</code></pre><h1 id="build-the-library"><a href="#build-the-library" class="headerlink" title="build the library"></a>build the library</h1><p>WORKDIR /src</p>
+<p>ADD . /src</p>
+<p>RUN GOPATH=/go GOOS=linux /usr/lib/go-1.12/bin/go build -o app &amp;&amp; \<br>    mv /src/app /usr/local/bin</p>
+<p>ENV http_proxy ‘’<br>ENV https_proxy ‘’</p>
+<p>EXPOSE 8000</p>
+<p>ENTRYPOINT [“/usr/local/bin/app”]</p>
+<p><code>`</code></p>
 
-ADD . /src
-
-RUN GOPATH=/go GOOS=linux /usr/lib/go-1.12/bin/go build -o app &amp;&amp; \
-    mv /src/app /usr/local/bin
-
-ENV http_proxy &#39;&#39;
-ENV https_proxy &#39;&#39;
-
-EXPOSE 8000
-
-ENTRYPOINT [&quot;/usr/local/bin/app&quot;]
-
-</code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1kng5ib0002bpaog1pwr50r" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1qao38500020kylt98ub2m3"
+         class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/">Kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kerberos/">Kerberos</a></li></ul>
 
