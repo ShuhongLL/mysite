@@ -2,18 +2,29 @@
 title: Configure Kerberos Authentication in Golang
 date: 2019-10-10 19:54:37
 tags: [Kafka, Golang, Kerberos]
-photos: ["../images/apache-kafka.png"]
+photos: ["../images/kerberos.png"]
 ---
 
-Configure Kerberos authentication in Golang
+This is a short guide about how to configure kerberos authentication on the client side (server side already been configured) using Golang
 <!-- more -->
+
 ## Breif introduction of Kerberos
 
+Kerberos is a protocol developed by MIT scientists with the name introduced by the [three-head dog](https://en.wikipedia.org/wiki/Cerberus) from myth. It is well-spreaded as a general authorization technology and used across multiple platforms.
 
-## Client
+The basic steps to get authentication are:
+1. A Client requests an authentication ticket(TGT) with credentials from the Key Distribution Center(KDC)
+2. KDC verifies the credentials and returns an encrypted TGT
+3. Client saves TGT and sends the encrypted TGT to the Ticket Granting Service(TGS)
+4. KDC verifies TGT and notifies TGS, then TGS returns a valid session token to the client
+5. Client uses the token to access a specific server
+6. ( If TGT expires, client will request for a new one by calling ` kinit ` ) 
+</br>
+
+## Go Client
 
 There are multipe clients available for Golang, and you can refer to [here](https://cwiki.apache.org/confluence/display/KAFKA/Clients) to have a breif look. Usually we intent to choose libraries which are purely coded in the sme programming language to avoid importing unnecessary dependencies. Unfortunately, by the time I wrote this article, I haven't found out a library which is purely written by Go, therefore I choose a cgo library supported by [Confluent](https://github.com/confluentinc/confluent-kafka-go), this library refers to a C library [librdkafka](https://github.com/edenhill/librdkafka).
-
+</br>
 
 ## Environment
 
@@ -42,9 +53,9 @@ apt-get install -yqq krb5-user libpam-krb5
 
 
 And double check if you have `ca-certificates` installed (Not sure why, but without ca-certificates, krb configuration cannot be set)
+</br>
 
-
-## Create a Client
+## Create a Client in Go
 
 ```go
 import kafka "github.com/confluentinc/confluent-kafka-go/kafka"
@@ -64,8 +75,9 @@ client, err := kafka.NewConsumer(&kafka.ConfigMap{
     "sasl.kerberos.service.name": "[Service name]",
     "sasl.kerberos.keytab":       "[Key tab location]",
     "sasl.kerberos.principal":    "[Principal]",
-    "sasl.kerberos.kinit.cmd":    "kinit -R -t \"%{sasl.kerberos.keytab}\" -k %{sasl.kerberos.principal}",
+    "sasl.kerberos.kinit.cmd":    "kinit -R -t \"%{sasl.kerberos.keytab}\" -k %{sasl.kerberos.principal}",      
 })
+```
 
 Then export [JAAS configurations](https://docs.confluent.io/current/kafka/authentication_sasl/index.html)
 ```
@@ -77,15 +89,15 @@ For here, I use `keytab` to authorize which need to configured on kafka server s
 
 ```
     "sasl.username": username,
-    "sasl.password": password
+    "sasl.password": password,
 ```
 
-Other configuration fields can be referred to [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
-
+Other configuration fields can be referred to the [offical documentaion](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+</br>
 
 ## Dockerfile
 
-Well, if you are a lazy person like me, here is the dockerfile :D
+Well, if you don't wanna spend time on the above configurations, here is the dockerfile :D
 ```
 # refer to a cgo library maintained by Confluent: https://github.com/confluentinc/confluent-kafka-go
 # which requires a C dependency librdkafka-dev: https://github.com/edenhill/librdkafka

@@ -55,7 +55,7 @@
     <div class="article-gallery-photos">
       
         
-          <img src="/../images/apache-kafka.png" itemprop="image">
+          <img src="/../images/kerberos.png" itemprop="image">
         
       
     </div>
@@ -63,8 +63,18 @@
 
 
       
-        <p>Configure Kerberos authentication in Golang<br><a id="more"></a></p>
-<h2 id="Breif-introduction-of-Kerberos"><a href="#Breif-introduction-of-Kerberos" class="headerlink" title="Breif introduction of Kerberos"></a>Breif introduction of Kerberos</h2><h2 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h2><p>There are multipe clients available for Golang, and you can refer to <a href="https://cwiki.apache.org/confluence/display/KAFKA/Clients" target="_blank" rel="noopener">here</a> to have a breif look. Usually we intent to choose libraries which are purely coded in the sme programming language to avoid importing unnecessary dependencies. Unfortunately, by the time I wrote this article, I haven’t found out a library which is purely written by Go, therefore I choose a cgo library supported by <a href="https://github.com/confluentinc/confluent-kafka-go" target="_blank" rel="noopener">Confluent</a>, this library refers to a C library <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener">librdkafka</a>.</p>
+        <p>This is a short guide about how to configure kerberos authentication on the client side (server side already been configured) using Golang<br><a id="more"></a></p>
+<h2 id="Breif-introduction-of-Kerberos"><a href="#Breif-introduction-of-Kerberos" class="headerlink" title="Breif introduction of Kerberos"></a>Breif introduction of Kerberos</h2><p>Kerberos is a protocol developed by MIT scientists with the name introduced by the <a href="https://en.wikipedia.org/wiki/Cerberus" target="_blank" rel="noopener">three-head dog</a> from myth. It is well-spreaded as a general authorization technology and used across multiple platforms.</p>
+<p>The basic steps to get authentication are:</p>
+<ol>
+<li>A Client requests an authentication ticket(TGT) with credentials from the Key Distribution Center(KDC)</li>
+<li>KDC verifies the credentials and returns an encrypted TGT</li>
+<li>Client saves TGT and sends the encrypted TGT to the Ticket Granting Service(TGS)</li>
+<li>KDC verifies TGT and notifies TGS, then TGS returns a valid session token to the client</li>
+<li>Client uses the token to access a specific server</li>
+<li>( If TGT expires, client will request for a new one by calling <code>kinit</code> )<br><br></li>
+</ol>
+<h2 id="Go-Client"><a href="#Go-Client" class="headerlink" title="Go Client"></a>Go Client</h2><p>There are multipe clients available for Golang, and you can refer to <a href="https://cwiki.apache.org/confluence/display/KAFKA/Clients" target="_blank" rel="noopener">here</a> to have a breif look. Usually we intent to choose libraries which are purely coded in the sme programming language to avoid importing unnecessary dependencies. Unfortunately, by the time I wrote this article, I haven’t found out a library which is purely written by Go, therefore I choose a cgo library supported by <a href="https://github.com/confluentinc/confluent-kafka-go" target="_blank" rel="noopener">Confluent</a>, this library refers to a C library <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener">librdkafka</a>.<br><br></p>
 <h2 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h2><p>For the reason that I couldn’t refresh my keytab on MacOS (most likely because macos disable UDP connection by default and hence cannot recognize kdc in my realms), I switched to linux (for dockerfile, linux is also a good choice :P).</p>
 <p>The Go version is required to be at least <code>1.12</code></p>
 <p>Firstly, since our client refering to <code>librdkafka</code>, we need to install librdkafka:</p>
@@ -76,8 +86,8 @@ add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 
 <pre><code>apt-get install -y libsasl2-modules-gssapi-mit libsasl2-dev
 apt-get install -yqq krb5-user libpam-krb5
 </code></pre><p><code>libsasl2-modules-gssapi-mit</code> and <code>libsasl2-dev</code> are specified to GSSAPI authentication, if you are using other mechanism (for example PLAIN or SCRAM-SHA-256), please refer to corresponding tools.</p>
-<p>And double check if you have <code>ca-certificates</code> installed (Not sure why, but without ca-certificates, krb configuration cannot be set)</p>
-<h2 id="Create-a-Client"><a href="#Create-a-Client" class="headerlink" title="Create a Client"></a>Create a Client</h2><pre><code class="go">import kafka &quot;github.com/confluentinc/confluent-kafka-go/kafka&quot;
+<p>And double check if you have <code>ca-certificates</code> installed (Not sure why, but without ca-certificates, krb configuration cannot be set)<br><br></p>
+<h2 id="Create-a-Client-in-Go"><a href="#Create-a-Client-in-Go" class="headerlink" title="Create a Client in Go"></a>Create a Client in Go</h2><pre><code class="go">import kafka &quot;github.com/confluentinc/confluent-kafka-go/kafka&quot;
 
 client, err := kafka.NewConsumer(&amp;kafka.ConfigMap{
     // Avoid connecting to IPv6 brokers:
@@ -94,45 +104,64 @@ client, err := kafka.NewConsumer(&amp;kafka.ConfigMap{
     &quot;sasl.kerberos.service.name&quot;: &quot;[Service name]&quot;,
     &quot;sasl.kerberos.keytab&quot;:       &quot;[Key tab location]&quot;,
     &quot;sasl.kerberos.principal&quot;:    &quot;[Principal]&quot;,
-    &quot;sasl.kerberos.kinit.cmd&quot;:    &quot;kinit -R -t \&quot;%{sasl.kerberos.keytab}\&quot; -k %{sasl.kerberos.principal}&quot;,
+    &quot;sasl.kerberos.kinit.cmd&quot;:    &quot;kinit -R -t \&quot;%{sasl.kerberos.keytab}\&quot; -k %{sasl.kerberos.principal}&quot;,      
 })
-
-Then export [JAAS configurations](https://docs.confluent.io/current/kafka/authentication_sasl/index.html)
 </code></pre>
-<p>export KRB5_CONFIG=”/usr/local/kafka/conf/krb5/krb5.conf”<br>export KAFKA_OPTS=”-Djava.security.auth.login.config=/usr/local/kafka/conf/kafka/kafka_client_jaas.conf-Djava.security.krb5.conf=/usr/local/kafka/conf/krb5/krb5.conf -Dsun.security.krb5.debug=true”</p>
-<pre><code>
-For here, I use `keytab` to authorize which need to configured on kafka server side. Initially, we can use `username` and `password` to authorize.
+<p>Then export <a href="https://docs.confluent.io/current/kafka/authentication_sasl/index.html" target="_blank" rel="noopener">JAAS configurations</a></p>
+<pre><code>export KRB5_CONFIG=&quot;/usr/local/kafka/conf/krb5/krb5.conf&quot;
+export KAFKA_OPTS=&quot;-Djava.security.auth.login.config=/usr/local/kafka/conf/kafka/kafka_client_jaas.conf-Djava.security.krb5.conf=/usr/local/kafka/conf/krb5/krb5.conf -Dsun.security.krb5.debug=true&quot;
+</code></pre><p>For here, I use <code>keytab</code> to authorize which need to configured on kafka server side. Initially, we can use <code>username</code> and <code>password</code> to authorize.</p>
+<pre><code>    &quot;sasl.username&quot;: username,
+    &quot;sasl.password&quot;: password,
+</code></pre><p>Other configuration fields can be referred to the <a href="https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md" target="_blank" rel="noopener">offical documentaion</a><br><br></p>
+<h2 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h2><p>Well, if you don’t wanna spend time on the above configurations, here is the dockerfile :D</p>
+<pre><code># refer to a cgo library maintained by Confluent: https://github.com/confluentinc/confluent-kafka-go
+# which requires a C dependency librdkafka-dev: https://github.com/edenhill/librdkafka
+# The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian.
+FROM ubuntu
 
-</code></pre><pre><code>&quot;sasl.username&quot;: username,
-&quot;sasl.password&quot;: password
-</code></pre><pre><code>
-Other configuration fields can be referred to [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+ENV http_proxy=
+ENV https_proxy=
 
+ENV DEBIAN_FRONTEND=noninteractive
 
-## Dockerfile
+# Install the C lib for kafka
+RUN apt-get update &amp;&amp; \
+    apt-get install -y --no-install-recommends apt-utils wget gnupg software-properties-common &amp;&amp; \
+    apt-get install -y apt-transport-https ca-certificates git curl openssl libsasl2-modules-gssapi-mit libsasl2-dev &amp;&amp; \
+    apt-get install -yqq krb5-user libpam-krb5 &amp;&amp; \
+# import source repository from confluent, check the latest version on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+    wget -qO - https://packages.confluent.io/deb/5.3/archive.key | apt-key add - &amp;&amp; \
+    add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 stable main&quot; &amp;&amp; \
+# import the librdkafka-dev from confluent source repository
+# confluent-kafka-go always requires the latest librdkafka-dev library
+# If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,
+# please check the latest source repositary on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+    apt-get install -y librdkafka-dev &amp;&amp; \
+# Install Go
+    add-apt-repository ppa:longsleep/golang-backports &amp;&amp; \
+    apt-get install -y golang-1.12-go
 
-Well, if you are a lazy person like me, here is the dockerfile :D
-</code></pre><h1 id="refer-to-a-cgo-library-maintained-by-Confluent-https-github-com-confluentinc-confluent-kafka-go"><a href="#refer-to-a-cgo-library-maintained-by-Confluent-https-github-com-confluentinc-confluent-kafka-go" class="headerlink" title="refer to a cgo library maintained by Confluent: https://github.com/confluentinc/confluent-kafka-go"></a>refer to a cgo library maintained by Confluent: <a href="https://github.com/confluentinc/confluent-kafka-go" target="_blank" rel="noopener">https://github.com/confluentinc/confluent-kafka-go</a></h1><h1 id="which-requires-a-C-dependency-librdkafka-dev-https-github-com-edenhill-librdkafka"><a href="#which-requires-a-C-dependency-librdkafka-dev-https-github-com-edenhill-librdkafka" class="headerlink" title="which requires a C dependency librdkafka-dev: https://github.com/edenhill/librdkafka"></a>which requires a C dependency librdkafka-dev: <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener">https://github.com/edenhill/librdkafka</a></h1><h1 id="The-C-dependency-librdkafka-dev-is-curretly-not-available-for-other-linux-version-except-for-ubuntu-debian"><a href="#The-C-dependency-librdkafka-dev-is-curretly-not-available-for-other-linux-version-except-for-ubuntu-debian" class="headerlink" title="The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian."></a>The C dependency librdkafka-dev is curretly not available for other linux version except for ubuntu/debian.</h1><p>FROM ubuntu</p>
-<p>ENV http_proxy=<br>ENV https_proxy=</p>
-<p>ENV DEBIAN_FRONTEND=noninteractive</p>
-<h1 id="Install-the-C-lib-for-kafka"><a href="#Install-the-C-lib-for-kafka" class="headerlink" title="Install the C lib for kafka"></a>Install the C lib for kafka</h1><p>RUN apt-get update &amp;&amp; \<br>    apt-get install -y –no-install-recommends apt-utils wget gnupg software-properties-common &amp;&amp; \<br>    apt-get install -y apt-transport-https ca-certificates git curl openssl libsasl2-modules-gssapi-mit libsasl2-dev &amp;&amp; \<br>    apt-get install -yqq krb5-user libpam-krb5 &amp;&amp; \</p>
-<h1 id="import-source-repository-from-confluent-check-the-latest-version-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software"><a href="#import-source-repository-from-confluent-check-the-latest-version-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software" class="headerlink" title="import source repository from confluent, check the latest version on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software"></a>import source repository from confluent, check the latest version on <a href="https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software" target="_blank" rel="noopener">https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software</a></h1><pre><code>wget -qO - https://packages.confluent.io/deb/5.3/archive.key | apt-key add - &amp;&amp; \
-add-apt-repository &quot;deb [arch=amd64] https://packages.confluent.io/deb/5.3 stable main&quot; &amp;&amp; \
-</code></pre><h1 id="import-the-librdkafka-dev-from-confluent-source-repository"><a href="#import-the-librdkafka-dev-from-confluent-source-repository" class="headerlink" title="import the librdkafka-dev from confluent source repository"></a>import the librdkafka-dev from confluent source repository</h1><h1 id="confluent-kafka-go-always-requires-the-latest-librdkafka-dev-library"><a href="#confluent-kafka-go-always-requires-the-latest-librdkafka-dev-library" class="headerlink" title="confluent-kafka-go always requires the latest librdkafka-dev library"></a>confluent-kafka-go always requires the latest librdkafka-dev library</h1><h1 id="If-go-build-fail-below-because-of-the-mismatch-of-confluent-kafka-go-and-librdkafka-dev"><a href="#If-go-build-fail-below-because-of-the-mismatch-of-confluent-kafka-go-and-librdkafka-dev" class="headerlink" title="If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,"></a>If go build fail below because of the mismatch of confluent-kafka-go and librdkafka-dev,</h1><h1 id="please-check-the-latest-source-repositary-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software"><a href="#please-check-the-latest-source-repositary-on-https-docs-confluent-io-current-installation-installing-cp-deb-ubuntu-html-get-the-software" class="headerlink" title="please check the latest source repositary on https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software"></a>please check the latest source repositary on <a href="https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software" target="_blank" rel="noopener">https://docs.confluent.io/current/installation/installing_cp/deb-ubuntu.html#get-the-software</a></h1><pre><code>apt-get install -y librdkafka-dev &amp;&amp; \
-</code></pre><h1 id="Install-Go"><a href="#Install-Go" class="headerlink" title="Install Go"></a>Install Go</h1><pre><code>add-apt-repository ppa:longsleep/golang-backports &amp;&amp; \
-apt-get install -y golang-1.12-go
-</code></pre><h1 id="build-the-library"><a href="#build-the-library" class="headerlink" title="build the library"></a>build the library</h1><p>WORKDIR /src</p>
-<p>ADD . /src</p>
-<p>RUN GOPATH=/go GOOS=linux /usr/lib/go-1.12/bin/go build -o app &amp;&amp; \<br>    mv /src/app /usr/local/bin</p>
-<p>ENV http_proxy ‘’<br>ENV https_proxy ‘’</p>
-<p>EXPOSE 8000</p>
-<p>ENTRYPOINT [“/usr/local/bin/app”]</p>
-<p><code>`</code></p>
+# build the library
+WORKDIR /src
 
+ADD . /src
+
+RUN GOPATH=/go GOOS=linux /usr/lib/go-1.12/bin/go build -o app &amp;&amp; \
+    mv /src/app /usr/local/bin
+
+ENV http_proxy &#39;&#39;
+ENV https_proxy &#39;&#39;
+
+EXPOSE 8000
+
+ENTRYPOINT [&quot;/usr/local/bin/app&quot;]
+
+</code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1qb5gvt000556yl6goes9vi"
+      <a data-url="https://ohyoooo.github.io/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" data-id="ck1qcw6c20001jaylscnq20p2"
          class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/">Kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kerberos/">Kerberos</a></li></ul>
