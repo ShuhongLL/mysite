@@ -1,7 +1,7 @@
 ---
 title: Suffix Tree
 date: 2019-07-22 20:07:12
-tags: [Suffix Tree]
+tags: [Suffix Tree, Algorithm, Data Structure]
 photos: ["../images/SuffixTree_Cover.JPG"]
 ---
 Suffix tree is a data structure aimming at solving **string** related problems in **linear time**

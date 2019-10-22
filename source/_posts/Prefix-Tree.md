@@ -1,7 +1,7 @@
 ---
 title: Prefix Tree
 date: 2019-07-18 18:30:12
-tags: [Prefix Tree]
+tags: [Prefix Tree, Algorithm, Data Structure]
 photos: ["../images/prefixTree.JPG"]
 ---
 

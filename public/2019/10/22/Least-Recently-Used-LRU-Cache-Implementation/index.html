@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>
-    Archives: 2019/10 |
+    Least Recently Used (LRU) Python Implementation |
     
     OhYoooo</title>
   
@@ -23,88 +23,132 @@
 <body>
 <main class="content">
   <section class="outer">
-  <article class="articles">
+  <article id="post-Least-Recently-Used-LRU-Cache-Implementation" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
     
-    <h1 class="page-type-title">2019/10</h1>
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Least Recently Used (LRU) Python Implementation
+    </h1>
+  
+
+      </header>
+    
 
     
-    
-    
-      
-      
-        
-        
-    <div class="archives-wrap">
-      <div class="archive-year-wrap">
-        <a href="/archives/2019" class="archive-year">2019</a>
-      </div>
-      <div class="archives">
-        
-        <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" class="archive-article-date">
-  <time datetime="2019-10-22T05:28:12.000Z" itemprop="datePublished">10/22</time>
+      <div class="article-meta">
+        <a href="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" class="article-date">
+  <time datetime="2019-10-22T05:28:12.000Z" itemprop="datePublished">2019-10-22</time>
 </a>
-      
-  
-    <h2 itemprop="name">
-      <a class="archive-article-title" href="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/">Least Recently Used (LRU) Python Implementation</a>
-    </h2>
-  
-
-    </header>
-    
-  </div>
-</article>
-        
-      
-      
-        <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" class="archive-article-date">
-  <time datetime="2019-10-10T10:54:37.000Z" itemprop="datePublished">10/10</time>
-</a>
-      
-  
-    <h2 itemprop="name">
-      <a class="archive-article-title" href="/2019/10/10/Configure-Kerberos-Authentication-in-Golang/">Configure Kerberos Authentication in Golang</a>
-    </h2>
-  
-
-    </header>
-    
-  </div>
-</article>
-        
-      
-      
-        <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2019/10/01/An-Brew-Error-When-Upgrade-Mongodb-to-4-2/" class="archive-article-date">
-  <time datetime="2019-10-01T08:38:05.000Z" itemprop="datePublished">10/01</time>
-</a>
-      
-  
-    <h2 itemprop="name">
-      <a class="archive-article-title" href="/2019/10/01/An-Brew-Error-When-Upgrade-Mongodb-to-4-2/">A Brew Error When Upgrade Mongodb to 4.2</a>
-    </h2>
-  
-
-    </header>
-    
-  </div>
-</article>
-        
         
       </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/LRU.png" itemprop="image">
+        
+      
     </div>
+  </div>
+
+
+      
+        <p>This implementation is based on <strong>double-linked-list</strong> and <strong>dictionary</strong>. Runtime: O(1)<br><a id="more"></a></p>
+<pre><code class="python">class Node:
+    def __init__(self, k, v):
+        self.key = k
+        self.val = v
+        self.prev = None
+        self.next = None
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.dict = {}
+        self.head = Node(0, 0)
+        self.tail = Node(0, 0)
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    def get(self, key: int) -&gt; int:
+        if key in self.dict:
+            node = self.dict[key]
+            self._remove(node)
+            self._append(node)
+            return node.val
+        return -1
+
+    def put(self, key: int, value: int) -&gt; None:
+        if key in self.dict:
+            self._remove(self.dict[key])
+        node = Node(key, value)
+        self._append(node)
+        self.dict[key] = node
+        if len(self.dict) &gt; self.capacity:
+            n = self.head.next
+            self._remove(n)
+            del self.dict[n.key]
+
+    def _remove(self, node: Node):
+        p = node.prev
+        n = node.next
+        p.next = n
+        n.prev = p
+
+    def _append(self, node: Node):
+        p = self.tail.prev
+        p.next = node
+        node.prev = p
+        node.next = self.tail
+        self.tail.prev = node
+
+</code></pre>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" data-id="ck21f8r900006aiaozo4w0mpq" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LRU/">LRU</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/10/10/Configure-Kerberos-Authentication-in-Golang/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Configure Kerberos Authentication in Golang</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
     
   
-  
-</article></section>
+
+</article>
+
+
+
+</section>
   <footer class="footer">
   
   <div class="outer">
