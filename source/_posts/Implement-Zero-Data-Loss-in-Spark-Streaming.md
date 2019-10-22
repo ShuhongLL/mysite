@@ -8,9 +8,9 @@ This is a log from my own experience in spark streaming during my work. Base on 
 
 ## Background
 I have such workflow that the spark streaming receives dataset from both Kafka and PubSub, after doing some clean up and modeling, push the data to the Cloud Datastore.
-![my Workflow](sparkworkflow.JPG)
+![my Workflow](sparkworkflow.png)
 It works fine when the data stream is small and reports me the expected values; however while the number of end users is growing large, especially when the data stream turns to be erratic and sometimes considerably large if end users interact frequently with our UI pages, the spark streaming will get a lot of uncertain runtime errors. Those errors are most likely caused by the finite number of workers in our cluster. Also when there are too much stream rushing over to the server, the limited memory in cache will cause failures. After we upgraded the cluster on cloud, the number of errors is significantly reduced.
-![CPU Utilization](cpudiagram.JPG)
+![CPU Utilization](cpudiagram.png)
 But the data processed during the errors was permanently lost and cannot be recovered. The data running on spark is buffered in memory (cache) and will be cleared meanwhile a failure occurs. This is not desired since some valuable KPIs may be lost as well. To prevent such data loss, I tried different strategies.
 </br>
 
@@ -50,7 +50,7 @@ and `sRDD.isCheckpointed()` will return **true**. For cleaning, the RDDs stored 
 Write Ahead Logs are used in database and file systems to ensure the durability of any data operations. The intention of the operation is first written down into a durable log , and then the operation is applied to the data. If the system fails in the middle of applying the operation, it can recover by reading the log and reapplying the operations it had intended to do.
 
 Spark streaming uses **Receiver** to read data from **Kafka**. They run as long-running tasks in the executors and store the revecived data in the memory of the executors. If you enable the **checkpoint**, the data will be checkpointed either in cache or disk **in executors** before porceed into the application drivers. Unlike **checkpoint**, applying **WAL** will instead backup the recevied data in an **external fault-tolerant filesystem**. And after the executor batches the received data and sends to the driver, **WAL** supports another log to store the block metadata into external filesystem before being executed.
-![https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html](wal_spark.JPG)
+![https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html](wal_spark.png)
 (diagram from https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html)
 Spark streaming starts supporting WAL after version 1.2 and can be enabled by setting the config:
 
@@ -124,7 +124,7 @@ And also the data will not be recoverable across applications or Spark upgrades 
 
 ## Kafka Direct API
 This mechanism is only available when you data source is **Kafka**. Kafka supports a commit strategy which is able to help you manage offsets of each topics. Each offset points to a slot in a topic. When the data stored in this slot is consumed by any receiver, Kafka will be acknowledged by this consumption and moves the index to the next data slot.
-![https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/](Spark-Streaming-flow-for-offsets.JPG)
+![https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/](Spark-Streaming-flow-for-offsets.png)
 (diagram from https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/)
 When `enable.auto.commit` is set to be true, as soon as any receiver retrieves the data from the offset datastore in Kafka (here I use Kafka to store offsets), the receiver will automatically commit, which doesn't ensure that the data is successfully executed in the spark streaming. Therefore, we have to disbale the auto-commit when we are creating DStream from Kafka. After the data is successfully processed, we manually commit the offset to the datastore by calling the Kafka direct API:
 ```scala
