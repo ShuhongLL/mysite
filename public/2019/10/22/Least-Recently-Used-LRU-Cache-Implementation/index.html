@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>
-    Least Recently Used (LRU) Python Implementation |
+    LRU Cache Python Implementation |
     
     OhYoooo</title>
   
@@ -31,7 +31,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Least Recently Used (LRU) Python Implementation
+      LRU Cache Python Implementation
     </h1>
   
 
@@ -64,7 +64,19 @@
 
       
         <p>This implementation is based on <strong>double-linked-list</strong> and <strong>dictionary</strong>. Runtime: O(1)<br><a id="more"></a></p>
-<pre><code class="python">class Node:
+<h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>initialize the linked-list with a sentinel head and tail<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_init_node.png" alt="init sentinel node"><br>And an empty dictionary:</p>
+<pre><code class="python">dict = { }
+</code></pre>
+<p><br></p>
+<h2 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h2><p>Suppose we have a object to insert</p>
+<pre><code>{ keyA: value_a }
+</code></pre><p>Firstly we check out if out dictionary already contains a key named <code>A</code> (if so remove it from the linked list). Then append the new node to the tail of our linked-list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_first_insert.png" alt="init sentinel node"><br>Afterwards, add the new object to our dictionary key by <code>keyA</code></p>
+<pre><code class="python">dict = { keyA: valueA }
+</code></pre>
+<p>If we have already constructed the follwing linked-list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_before_second_insert.png" alt="init sentinel node"><br>Then to insert { keyA: valueA } once again (for example, the same object is used/modified again)<br>We will firstly remove it from the current linked-list and append the same node at the tail of the list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_after_second_insert.png" alt="init sentinel node"></p>
+<p>After the insertion, if the size of the list hit the maximum capacity, we need to pop the first element (which is not recently used), and assign sentinel head to the next element<br><br></p>
+<h2 id="Get"><a href="#Get" class="headerlink" title="Get"></a>Get</h2><p>Checkout if our dictionary contains the key, if not, which means the element does not exist, return -1.<br>If the key does exist, get the target node, then remove it from the linked-list and append at the tail<br><br></p>
+<h2 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h2><pre><code class="python">class Node:
     def __init__(self, k, v):
         self.key = k
         self.val = v
@@ -117,7 +129,8 @@ class LRUCache:
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" data-id="ck21f8r900006aiaozo4w0mpq" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" data-id="ck21y0j5e0006fqyllzi64q7y"
+         class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LRU/">LRU</a></li></ul>
 

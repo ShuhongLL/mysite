@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[Least Recently Used (LRU) Python Implementation]]></title>
+    <title><![CDATA[LRU Cache Python Implementation]]></title>
     <url>%2F2019%2F10%2F22%2FLeast-Recently-Used-LRU-Cache-Implementation%2F</url>
-    <content type="text"><![CDATA[This implementation is based on double-linked-list and dictionary. Runtime: O(1) class Node: def __init__(self, k, v): self.key = k self.val = v self.prev = None self.next = None class LRUCache: def __init__(self, capacity: int): self.capacity = capacity self.dict = {} self.head = Node(0, 0) self.tail = Node(0, 0) self.head.next = self.tail self.tail.prev = self.head def get(self, key: int) -&gt; int: if key in self.dict: node = self.dict[key] self._remove(node) self._append(node) return node.val return -1 def put(self, key: int, value: int) -&gt; None: if key in self.dict: self._remove(self.dict[key]) node = Node(key, value) self._append(node) self.dict[key] = node if len(self.dict) &gt; self.capacity: n = self.head.next self._remove(n) del self.dict[n.key] def _remove(self, node: Node): p = node.prev n = node.next p.next = n n.prev = p def _append(self, node: Node): p = self.tail.prev p.next = node node.prev = p node.next = self.tail self.tail.prev = node]]></content>
+    <content type="text"><![CDATA[This implementation is based on double-linked-list and dictionary. Runtime: O(1) Initinitialize the linked-list with a sentinel head and tailAnd an empty dictionary: dict = { } InsertSuppose we have a object to insert { keyA: value_a } Firstly we check out if out dictionary already contains a key named A (if so remove it from the linked list). Then append the new node to the tail of our linked-listAfterwards, add the new object to our dictionary key by keyA dict = { keyA: valueA } If we have already constructed the follwing linked-listThen to insert { keyA: valueA } once again (for example, the same object is used/modified again)We will firstly remove it from the current linked-list and append the same node at the tail of the list After the insertion, if the size of the list hit the maximum capacity, we need to pop the first element (which is not recently used), and assign sentinel head to the next element GetCheckout if our dictionary contains the key, if not, which means the element does not exist, return -1.If the key does exist, get the target node, then remove it from the linked-list and append at the tail Implementationclass Node: def __init__(self, k, v): self.key = k self.val = v self.prev = None self.next = None class LRUCache: def __init__(self, capacity: int): self.capacity = capacity self.dict = {} self.head = Node(0, 0) self.tail = Node(0, 0) self.head.next = self.tail self.tail.prev = self.head def get(self, key: int) -&gt; int: if key in self.dict: node = self.dict[key] self._remove(node) self._append(node) return node.val return -1 def put(self, key: int, value: int) -&gt; None: if key in self.dict: self._remove(self.dict[key]) node = Node(key, value) self._append(node) self.dict[key] = node if len(self.dict) &gt; self.capacity: n = self.head.next self._remove(n) del self.dict[n.key] def _remove(self, node: Node): p = node.prev n = node.next p.next = n n.prev = p def _append(self, node: Node): p = self.tail.prev p.next = node node.prev = p node.next = self.tail self.tail.prev = node]]></content>
       <tags>
         <tag>LRU</tag>
         <tag>Algorithm</tag>
@@ -28,6 +28,11 @@
         <tag>Brew</tag>
         <tag>Mongo</tag>
       </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Hello World]]></title>
+    <url>%2F2019%2F07%2F31%2Fhello-world%2F</url>
+    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post$ hexo new &quot;My New Post&quot; More info: Writing Run server$ hexo server More info: Server Generate static files$ hexo generate More info: Generating Deploy to remote sites$ hexo deploy More info: Deployment]]></content>
   </entry>
   <entry>
     <title><![CDATA[Suffix Tree]]></title>
@@ -128,10 +133,5 @@
         <tag>Saga</tag>
         <tag>React</tag>
       </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[Hello World]]></title>
-    <url>%2F2019%2F04%2F27%2Fhello-world%2F</url>
-    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post$ hexo new &quot;My New Post&quot; More info: Writing Run server$ hexo server More info: Server Generate static files$ hexo generate More info: Generating Deploy to remote sites$ hexo deploy More info: Deployment]]></content>
   </entry>
 </search>
