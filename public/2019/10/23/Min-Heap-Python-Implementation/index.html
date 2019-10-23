@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Min Heap Python Implementation |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Min-Heap-Python-Implementation" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Min Heap Python Implementation
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/10/23/Min-Heap-Python-Implementation/" class="article-date">
+  <time datetime="2019-10-23T05:47:16.000Z" itemprop="datePublished">2019-10-23</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/Min_Heap.png" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <p>This is a python implementation of min-heap.<br><a id="more"></a><br><br></p>
+<h2 id="Heap-Queue"><a href="#Heap-Queue" class="headerlink" title="Heap Queue"></a>Heap Queue</h2><p>We use a complete binary tree to represent our heap. A complete binary tree can be stored in an array with list[parent] being the parent node of two children list[parent * 2] and list[parent * 2 + 1]<br><img src="/2019/10/23/Min-Heap-Python-Implementation/Min_Heap_List.png" alt="Min Heap in List"></p>
+<p><br></p>
+<h2 id="lt-heapq-py-gt-Implementation"><a href="#lt-heapq-py-gt-Implementation" class="headerlink" title="&lt;heapq.py&gt; Implementation"></a>&lt;heapq.py&gt; Implementation</h2><p><strong>heapq</strong> is a python library provides an implementation of min heap, also known as the priority queue. This implementation uses zero-based indexing (the first element stored in heapq[0]). A full documentation can be referred <a href="https://docs.python.org/2/library/heapq.html" target="_blank" rel="noopener">here</a></p>
+<p>We will mainly use <strong>heappush</strong> and <strong>heappop</strong> to create our own wrapper.</p>
+<blockquote>
+<p><strong>heapq.heappush(heap, item)</strong><br>Push the value item onto the heap, maintaining the heap invariant.</p>
+</blockquote>
+<blockquote>
+<p><strong>heapq.heappop(heap)</strong><br>Pop and return the smallest item from the heap, maintaining the heap invariant. If the heap is empty, IndexError is raised. To access the smallest item without popping it, use heap[0].</p>
+</blockquote>
+<pre><code class="python">import heapq
+
+class MinHeap:
+    def __init__(self):
+        self._heap = []
+
+    def __len__(self):
+        return len(self._heap)
+
+    def push(self, priority, item):
+        &quot;&quot;&quot;
+        Push an item with priority into the heap.
+        Priority 0 is the highest.
+        &quot;&quot;&quot;
+        assert priority &gt;= 0
+        heapq.heappush(self._heap, (priority, item))
+
+    def pop():
+        &quot;&quot;&quot;
+        Returns the item with lowest priority
+        &quot;&quot;&quot;
+        return heapq.heappop(self._heap)[1] # (priority, item)[1] == item
+
+</code></pre>
+<p><br></p>
+<h2 id="Raw-Implementation"><a href="#Raw-Implementation" class="headerlink" title="Raw Implementation"></a>Raw Implementation</h2><p>We maintain the heap in a index-one-based list (always keep heap[0] to be None). For all elements in the heap, heap[parent] will ideally have two children on heap[parent * 2] and heap[parent * 2 + 1]. Besides, in order to maintain the heap to be a complete binary tree, we should always insert to the end of the list and do some procedures to rearrange the new element to a proper place in our heap.</p>
+<p>For the insertion, we will always append to the list. Afterwards, bubble up the new element. Start from the last element (which is the newly inserted one), compare its value with its parent (index divided by two), if less than its parent, swap parent and child until its value is no longer less than its parent or hit the root of the heap.<br><img src="/2019/10/23/Min-Heap-Python-Implementation/Min_Heap_Insert.png" alt="Insert in Min Heap"></p>
+<p>When calling pop, we pop heap[1], which is the minimum value out of the heap, replace heap[1] with the last element of the heap to maintain a complete binary tree. Afterwards, sink down the new root element to a proper palce in the heap. Precisely, compare the value of the root (previously the last element) and two of its child, if any of them is less than the root value, swap root and that child. Keeping doing this until none of its two child is less than itself or reach the leaf of the tree.<br><img src="/2019/10/23/Min-Heap-Python-Implementation/Min_Heap_Pop.png" alt="Pop in Min Heap"></p>
+<p>Below is a complete implementation</p>
+<pre><code class="python">class MinHeap:
+    def __init__(self):
+        &quot;&quot;&quot;
+        Init with index-one-based list
+        &quot;&quot;&quot;
+        self._heap = [None]
+
+    def __len__(self):
+        return len(self._heap) - 1
+
+    def _swap(self, t1, t2):
+        self._heap[t1], self._heap[t2] = self._heap[t2], self._heap[t1]
+
+    def _up_heap(self, index):
+        &quot;&quot;&quot;
+        Bubble up the inserted element to the proper place
+        &quot;&quot;&quot;
+        while index &gt; 1:
+            parent = index // 2
+            if self._heap[parent] &gt; self._heap[index]:
+                self._swap(parent, index)
+            index = parent
+
+    def _down_heap(self, index):
+        &quot;&quot;&quot;
+        Sink down the root element
+        &quot;&quot;&quot;
+        length = len(self._heap)
+        while index * 2 &lt; length:
+            child = index * 2
+            # compare two children, assign target child to be the smaller one
+            if child + 1 &lt; length and self._heap[child+1] &lt; self._heap[child]:      
+                child += 1
+            if self._heap[child] &lt; self._heap[index]:
+                self._swap(child, index)
+            index = child
+
+    def empty():
+        return len(self._heap) == 1
+
+    def push(self, value):
+        &quot;&quot;&quot;
+        Push a new element at the tail of the heap
+        And bubble up
+        &quot;&quot;&quot;
+        if not value:
+            raise TypeError(&#39;&quot;value&quot; cannot be of NoneType&#39;)
+        self._heap.append(value)
+        self._up_heap(len(self._heap) - 1)
+
+    def pop(self):
+        &quot;&quot;&quot;
+        Pop the root element, which is the minimum value of the heap
+        Assign the last element from the list to be the new root
+        Then sink down
+        &quot;&quot;&quot;
+        if leb(self._heap) &lt;= 1:
+            return None
+        result = self._heap[1]
+        last = self._heap.pop(-1)
+        if len(self._heap) &gt; 1:
+            self._heap[1] = last
+            self._down_heap(1)
+        return result
+
+    def peak(self):
+        if len(self._heap) &gt; 1:
+            return self._heap[1]
+        return None
+
+</code></pre>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/10/23/Min-Heap-Python-Implementation/" data-id="ck22w494s000950aos53u1ht7" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Min-Heap/">Min Heap</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">LRU Cache Python Implementation</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
