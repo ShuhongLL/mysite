@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ohyoooo.github.io/"/>
-  <updated>2019-10-23T09:44:24.482Z</updated>
+  <updated>2019-10-23T09:47:24.113Z</updated>
   <id>https://ohyoooo.github.io/</id>
   
   <author>
@@ -17,11 +17,11 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>Min Heap Python Implementation</title>
+    <title>Min Heap</title>
     <link href="https://ohyoooo.github.io/2019/10/23/Min-Heap-Python-Implementation/"/>
     <id>https://ohyoooo.github.io/2019/10/23/Min-Heap-Python-Implementation/</id>
     <published>2019-10-23T05:47:16.000Z</published>
-    <updated>2019-10-23T09:44:24.482Z</updated>
+    <updated>2019-10-23T09:47:24.113Z</updated>
     
     <content type="html"><![CDATA[<p>This is a python implementation of min-heap.<br><a id="more"></a><br><br></p><h2 id="Heap-Queue"><a href="#Heap-Queue" class="headerlink" title="Heap Queue"></a>Heap Queue</h2><p>We use a complete binary tree to represent our heap. A complete binary tree can be stored in an array with list[parent] being the parent node of two children list[parent * 2] and list[parent * 2 + 1]<br><img src="/2019/10/23/Min-Heap-Python-Implementation/Min_Heap_List.png" alt="Min Heap in List"></p><p><br></p><h2 id="lt-heapq-py-gt-Implementation"><a href="#lt-heapq-py-gt-Implementation" class="headerlink" title="&lt;heapq.py&gt; Implementation"></a>&lt;heapq.py&gt; Implementation</h2><p><strong>heapq</strong> is a python library provides an implementation of min heap, also known as the priority queue. This implementation uses zero-based indexing (the first element stored in heapq[0]). A full documentation can be referred <a href="https://docs.python.org/2/library/heapq.html" target="_blank" rel="noopener">here</a></p><p>We will mainly use <strong>heappush</strong> and <strong>heappop</strong> to create our own wrapper.</p><blockquote><p><strong>heapq.heappush(heap, item)</strong><br>Push the value item onto the heap, maintaining the heap invariant.</p></blockquote><blockquote><p><strong>heapq.heappop(heap)</strong><br>Pop and return the smallest item from the heap, maintaining the heap invariant. If the heap is empty, IndexError is raised. To access the smallest item without popping it, use heap[0].</p></blockquote><pre><code class="python">import heapqclass MinHeap:    def __init__(self):        self._heap = []    def __len__(self):        return len(self._heap)    def push(self, priority, item):        &quot;&quot;&quot;        Push an item with priority into the heap.        Priority 0 is the highest.        &quot;&quot;&quot;        assert priority &gt;= 0        heapq.heappush(self._heap, (priority, item))    def pop():        &quot;&quot;&quot;        Returns the item with lowest priority        &quot;&quot;&quot;        return heapq.heappop(self._heap)[1] # (priority, item)[1] == item</code></pre><p><br></p><h2 id="Raw-Implementation"><a href="#Raw-Implementation" class="headerlink" title="Raw Implementation"></a>Raw Implementation</h2><p>We maintain the heap in a index-one-based list (always keep heap[0] to be None). For all elements in the heap, heap[parent] will ideally have two children on heap[parent * 2] and heap[parent * 2 + 1]. Besides, in order to maintain the heap to be a complete binary tree, we should always insert to the end of the list and do some procedures to rearrange the new element to a proper place in our heap.</p><p>For the insertion, we will always append to the list. Afterwards, bubble up the new element. Start from the last element (which is the newly inserted one), compare its value with its parent (index divided by two), if less than its parent, swap parent and child until its value is no longer less than its parent or hit the root of the heap.<br><img src="/2019/10/23/Min-Heap-Python-Implementation/Min_Heap_Insert.png" alt="Insert in Min Heap"></p><p>When calling pop, we pop heap[1], which is the minimum value out of the heap, replace heap[1] with the last element of the heap to maintain a complete binary tree. Afterwards, sink down the new root element to a proper palce in the heap. Precisely, compare the value of the root (previously the last element) and two of its child, if any of them is less than the root value, swap root and that child. Keeping doing this until none of its two child is less than itself or reach the leaf of the tree.<br><img src="/2019/10/23/Min-Heap-Python-Implementation/Min_Heap_Pop.png" alt="Pop in Min Heap"></p><p>Below is a complete implementation</p><pre><code class="python">class MinHeap:    def __init__(self):        &quot;&quot;&quot;        Init with index-one-based list        &quot;&quot;&quot;        self._heap = [None]    def __len__(self):        return len(self._heap) - 1    def _swap(self, t1, t2):        self._heap[t1], self._heap[t2] = self._heap[t2], self._heap[t1]    def _up_heap(self, index):        &quot;&quot;&quot;        Bubble up the inserted element to the proper place        &quot;&quot;&quot;        while index &gt; 1:            parent = index // 2            if self._heap[parent] &gt; self._heap[index]:                self._swap(parent, index)            index = parent    def _down_heap(self, index):        &quot;&quot;&quot;        Sink down the root element        &quot;&quot;&quot;        length = len(self._heap)        while index * 2 &lt; length:            child = index * 2            # compare two children, assign target child to be the smaller one            if child + 1 &lt; length and self._heap[child+1] &lt; self._heap[child]:                      child += 1            if self._heap[child] &lt; self._heap[index]:                self._swap(child, index)            index = child    def empty():        return len(self._heap) == 1    def push(self, value):        &quot;&quot;&quot;        Push a new element at the tail of the heap        And bubble up        &quot;&quot;&quot;        if not value:            raise TypeError(&#39;&quot;value&quot; cannot be of NoneType&#39;)        self._heap.append(value)        self._up_heap(len(self._heap) - 1)    def pop(self):        &quot;&quot;&quot;        Pop the root element, which is the minimum value of the heap        Assign the last element from the list to be the new root        Then sink down        &quot;&quot;&quot;        if leb(self._heap) &lt;= 1:            return None        result = self._heap[1]        last = self._heap.pop(-1)        if len(self._heap) &gt; 1:            self._heap[1] = last            self._down_heap(1)        return result    def peak(self):        if len(self._heap) &gt; 1:            return self._heap[1]        return None</code></pre>]]></content>
     
@@ -41,11 +41,11 @@
   </entry>
   
   <entry>
-    <title>LRU Cache Python Implementation</title>
+    <title>LRU Cache</title>
     <link href="https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/"/>
     <id>https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/</id>
     <published>2019-10-22T05:28:12.000Z</published>
-    <updated>2019-10-23T05:44:46.349Z</updated>
+    <updated>2019-10-23T09:47:35.214Z</updated>
     
     <content type="html"><![CDATA[<p>This implementation is based on <strong>double-linked-list</strong> and <strong>dictionary</strong>. Runtime: O(1)<br><a id="more"></a></p><h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>initialize the linked-list with a sentinel head and tail<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_init_node.png" alt="init sentinel node"><br>And an empty dictionary:</p><pre><code class="python">dict = { }</code></pre><p><br></p><h2 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h2><p>Suppose we have a object to insert</p><pre><code>{ keyA: value_a }</code></pre><p>Firstly we check out if out dictionary already contains a key named <code>A</code> (if so remove it from the linked list). Then append the new node to the tail of our linked-list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_first_insert.png" alt="init sentinel node"><br>Afterwards, add the new object to our dictionary key by <code>keyA</code></p><pre><code class="python">dict = { keyA: valueA }</code></pre><p>If we have already constructed the follwing linked-list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_before_second_insert.png" alt="init sentinel node"><br>Then to insert { keyA: valueA } once again (for example, the same object is used/modified again)<br>We will firstly remove it from the current linked-list and append the same node at the tail of the list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_after_second_insert.png" alt="init sentinel node"></p><p>After the insertion, if the size of the list hit the maximum capacity, we need to pop the first element (which is not recently used), and assign sentinel head to the next element<br><br></p><h2 id="Get"><a href="#Get" class="headerlink" title="Get"></a>Get</h2><p>Checkout if our dictionary contains the key, if not, which means the element does not exist, return -1.<br>If the key does exist, get the target node, then remove it from the linked-list and append at the tail<br><br></p><h2 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h2><pre><code class="python">class Node:    def __init__(self, k, v):        self.key = k        self.val = v        self.prev = None        self.next = Noneclass LRUCache:    def __init__(self, capacity: int):        self.capacity = capacity        self.dict = {}        self.head = Node(0, 0)        self.tail = Node(0, 0)        self.head.next = self.tail        self.tail.prev = self.head    def get(self, key: int) -&gt; int:        if key in self.dict:            node = self.dict[key]            self._remove(node)            self._append(node)            return node.val        return -1    def put(self, key: int, value: int) -&gt; None:        if key in self.dict:            self._remove(self.dict[key])        node = Node(key, value)        self._append(node)        self.dict[key] = node        if len(self.dict) &gt; self.capacity:            n = self.head.next            self._remove(n)            del self.dict[n.key]    def _remove(self, node: Node):        p = node.prev        n = node.next        p.next = n        n.prev = p    def _append(self, node: Node):        p = self.tail.prev        p.next = node        node.prev = p        node.next = self.tail        self.tail.prev = node</code></pre>]]></content>
     
@@ -56,11 +56,11 @@
     </summary>
     
     
+      <category term="LRU" scheme="https://ohyoooo.github.io/tags/LRU/"/>
+    
       <category term="Algorithm" scheme="https://ohyoooo.github.io/tags/Algorithm/"/>
     
       <category term="Data Structure" scheme="https://ohyoooo.github.io/tags/Data-Structure/"/>
-    
-      <category term="LRU" scheme="https://ohyoooo.github.io/tags/LRU/"/>
     
   </entry>
   
@@ -155,11 +155,11 @@
     </summary>
     
     
-      <category term="Prefix Tree" scheme="https://ohyoooo.github.io/tags/Prefix-Tree/"/>
-    
       <category term="Algorithm" scheme="https://ohyoooo.github.io/tags/Algorithm/"/>
     
       <category term="Data Structure" scheme="https://ohyoooo.github.io/tags/Data-Structure/"/>
+    
+      <category term="Prefix Tree" scheme="https://ohyoooo.github.io/tags/Prefix-Tree/"/>
     
   </entry>
   

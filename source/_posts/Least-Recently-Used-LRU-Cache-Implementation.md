@@ -1,5 +1,5 @@
 ---
-title: LRU Cache Python Implementation
+title: LRU Cache
 date: 2019-10-22 14:28:12
 tags: [LRU, Algorithm, Data Structure]
 photos: ["../images/LRU.png"]

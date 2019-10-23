@@ -1,5 +1,5 @@
 ---
-title: Min Heap Python Implementation
+title: Min Heap
 date: 2019-10-23 14:47:16
 tags: [Min Heap, Algorithm, Data Structure]
 photos: ["../images/Min_Heap.png"]
