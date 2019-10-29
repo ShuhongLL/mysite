@@ -90,12 +90,11 @@ def _init(self, start, end):
 <p><br></p>
 <h2 id="Insertion"><a href="#Insertion" class="headerlink" title="Insertion"></a>Insertion</h2><p>Before the insertion, we validate the boundary of the target interval</p>
 <pre><code class="python">def check_bound(self, start, end):
-        _start = max(self.start, start)
-        _end = min(self.end, end)
-        if _start &gt; _end:
-            return None, None
-        return _start, _end
-
+    _start = max(self.start, start)
+    _end = min(self.end, end)
+    if _start &gt; _end:
+        return None, None
+    return _start, _end
 </code></pre>
 <p>Afterwards, behave the insertion. We may encounter three cases:</p>
 <ol>
@@ -127,14 +126,12 @@ def _init(self, start, end):
     self.sum_value[key] = self.sum_value[(total_start, mid)] + self.sum_value[(mid+1, total_end)]   
     self.length[key] = self.length[(total_start, mid)] + self.length[(mid+1, total_end)]
 
-
 def add(self, start, end, weight = 1):
     _start, _end = self.check_bound(start, end)
     if _start == None:
         return False
     self._add(_start, _end, weight, self.start, self.end)
     return True
-
 </code></pre>
 <p><br></p>
 <h2 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h2><p>Same as insertion, query the target interval and return corresponding sum_weight or sum_length, for example:</p>
@@ -151,20 +148,18 @@ def add(self, start, end, weight = 1):
     # if segment cross over the mid point
     return self._find_sum(start, mid, total_start, mid) + self._find_sum(mid+1, end, mid+1, total_end)  
 
-
 def find_sum(self, start, end):
     _start, _end = self.check_bound(start, end)
     if _start == None:
         return 0
     return self._find_sum(_start, _end, self.start, self.end)
-
 </code></pre>
 <p>A full implementation can be referred <a href="https://github.com/OhYoooo/Segment-Tree/blob/master/segment_tree.py" target="_blank" rel="noopener">here</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/10/29/Segment-Tree/" data-id="ck2bcghki000edsaoyo7wdl09" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/10/29/Segment-Tree/" data-id="ck2beuutj000eyrao7bsiptvs" class="article-share-link">Share</a>
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Segment-Tree/">Segment Tree</a></li></ul>
 

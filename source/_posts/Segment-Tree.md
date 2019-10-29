@@ -48,12 +48,11 @@ def _init(self, start, end):
 Before the insertion, we validate the boundary of the target interval
 ```python
 def check_bound(self, start, end):
-        _start = max(self.start, start)
-        _end = min(self.end, end)
-        if _start > _end:
-            return None, None
-        return _start, _end
-
+    _start = max(self.start, start)
+    _end = min(self.end, end)
+    if _start > _end:
+        return None, None
+    return _start, _end
 ```
 Afterwards, behave the insertion. We may encounter three cases:
 
@@ -89,14 +88,12 @@ def _add(self, start, end, weight, total_start, total_end):
     self.sum_value[key] = self.sum_value[(total_start, mid)] + self.sum_value[(mid+1, total_end)]   
     self.length[key] = self.length[(total_start, mid)] + self.length[(mid+1, total_end)]
 
-
 def add(self, start, end, weight = 1):
     _start, _end = self.check_bound(start, end)
     if _start == None:
         return False
     self._add(_start, _end, weight, self.start, self.end)
     return True
-
 ```
 <br/>
 
@@ -117,13 +114,11 @@ def _find_sum(self, start, end, total_start, total_end):
     # if segment cross over the mid point
     return self._find_sum(start, mid, total_start, mid) + self._find_sum(mid+1, end, mid+1, total_end)  
 
-
 def find_sum(self, start, end):
     _start, _end = self.check_bound(start, end)
     if _start == None:
         return 0
     return self._find_sum(_start, _end, self.start, self.end)
-
 ```
 
 A full implementation can be referred [here](https://github.com/OhYoooo/Segment-Tree/blob/master/segment_tree.py)
