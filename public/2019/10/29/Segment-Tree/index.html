@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Segment Tree |
+    
+    OhYoooo</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+  
+  <script src="/js/pace.min.js"></script>
+</head>
+</html>
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Segment-Tree" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Segment Tree
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2019/10/29/Segment-Tree/" class="article-date">
+  <time datetime="2019-10-29T03:01:45.000Z" itemprop="datePublished">2019-10-29</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" style="text-align: justify" itemprop="articleBody">
+      
+
+      
+  <div class="article-gallery">
+    <div class="article-gallery-photos">
+      
+        
+          <img src="/../images/Segment_Tree.png" itemprop="image">
+        
+      
+    </div>
+  </div>
+
+
+      
+        <p>A Segment tree is used for storing information about intervals. The general query and insertion operations have a runtime of <strong>O(logn)</strong>. It will also take extra <strong>O(nlogn)</strong> time to build the tree.<br><a id="more"></a><br><br></p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>A segment tree is always a full binary tree which every node other than the leaves has two children (each node has exactly zero or two children). Therefore, if there are n nodes in total (n is always an odd number), there will be (n+1)/2 leaves.</p>
+<p><img src="/2019/10/29/Segment-Tree/Full_Binary_Tree.png" alt="A Full Binary Tree"><br>Each of the leaf will represent an unit interval [n:n], which has a length of 1 and assigned weight. A parent node [n:n+1] will always have two children [n:n] and [n+1:n+1], with sum_length to be set as the sum of lengths of its children and sum_weight to be the sum of its children’s weights. Hence the sum_length of the root node will represent the length converage of the given intervals and the sum_weight will show the accumulative weight.<br><br></p>
+<h2 id="Initialization"><a href="#Initialization" class="headerlink" title="Initialization"></a>Initialization</h2><blockquote>
+<p><strong>Note</strong>: For this implementation, we fix the boundaries of the tree (assign lower and upper bound while initializing). Thus, if the boundary was assinged to be [0:100], then the insertion of [90:110] will only insert the valid partition of the target (which is [90:100]).</p>
+</blockquote>
+<p>First of all, we decide the boundary of our tree and assign the boundary as the root interval. Then find the middle point of the root interval, assign left child to be [lower_bound:mid] and right child to be [mid:upper_bound]. Recursively calling the init function until start == end in [start:end] which is eactly the leave node of the tree.</p>
+<pre><code class="python">def __init__(self, start, end):
+        self.start = start
+        self.end = end
+        self.sum_value = {}
+        self.length = {}
+        self._init(start, end)
+
+
+def _init(self, start, end):
+    self.sum_value[(start, end)] = 0
+    self.length[(start, end)] = 0
+    if start &lt; end:
+        mid = start + (end - start)//2
+        self._init(start, mid)
+        self._init(mid+1, end)
+
+</code></pre>
+<p><br></p>
+<h2 id="Insertion"><a href="#Insertion" class="headerlink" title="Insertion"></a>Insertion</h2><p>Before the insertion, we validate the boundary of the target interval</p>
+<pre><code class="python">def check_bound(self, start, end):
+        _start = max(self.start, start)
+        _end = min(self.end, end)
+        if _start &gt; _end:
+            return None, None
+        return _start, _end
+
+</code></pre>
+<p>Afterwards, behave the insertion. We may encounter three cases:</p>
+<ol>
+<li><p>The target upper bound is less than mid value, hence insert to the left child<br><img src="/2019/10/29/Segment-Tree/Segment_Tree_Left_Insert.png" alt="Insert to the left child"></p>
+</li>
+<li><p>The target lower bound is greater than mid value, hence insert to the right child<br><img src="/2019/10/29/Segment-Tree/Segment_Tree_Right_Insert.png" alt="Insert to the right child"></p>
+</li>
+<li><p>The target crosses over two children, thus split it into two intervals and insert to the corresponding child<br><img src="/2019/10/29/Segment-Tree/Segment_Tree_Split_Insert.png" alt="Split and insert to both children"></p>
+</li>
+</ol>
+<p>Recursively calling insert function and update sum_length and sum_weight of the current root node. Return true if insert target successfully.</p>
+<pre><code class="python">def _add(self, start, end, weight, total_start, total_end):
+    key = (total_start, total_end)
+    if total_start == total_end:
+        self.sum_value[key] += weight
+        self.length[key] = 1 if self.sum_value[key] != 0 else 0
+        return
+    mid = self.start + (self.end - self.start)//2
+    # if segment is on the left hand side of mid point
+    if mid &gt;= end:
+        self._add(start, end, weight, total_start, mid)
+    # if segment is on the right hand side of mid point
+    elif mid &lt; start:
+        self._add(start, end, weight, mid+1, total_end)
+    # if segment cross over the mid point
+    else:
+        self._add(start, mid, weight, total_start, mid)
+        self._add(mid+1, end, weight, mid+1, total_end)
+    self.sum_value[key] = self.sum_value[(total_start, mid)] + self.sum_value[(mid+1, total_end)]   
+    self.length[key] = self.length[(total_start, mid)] + self.length[(mid+1, total_end)]
+
+
+def add(self, start, end, weight = 1):
+    _start, _end = self.check_bound(start, end)
+    if _start == None:
+        return False
+    self._add(_start, _end, weight, self.start, self.end)
+    return True
+
+</code></pre>
+<p><br></p>
+<h2 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h2><p>Same as insertion, query the target interval and return corresponding sum_weight or sum_length, for example:</p>
+<pre><code class="python">def _find_sum(self, start, end, total_start, total_end):
+    if start == total_start and end == total_end:
+        return self.sum_value([start, end])
+    mid = total_start + (total_end - total_end)//2
+    # if segment is on the left hand side of mid point
+    if mid &gt;= end:
+        return self._find_sum(start, end, total_start, mid)
+    # if segment is on the right hand side of mid point
+    if mid &lt; start:
+        return self._find_sum(start, end, mid+1, total_end)
+    # if segment cross over the mid point
+    return self._find_sum(start, mid, total_start, mid) + self._find_sum(mid+1, end, mid+1, total_end)  
+
+
+def find_sum(self, start, end):
+    _start, _end = self.check_bound(start, end)
+    if _start == None:
+        return 0
+    return self._find_sum(_start, _end, self.start, self.end)
+
+</code></pre>
+<p>A full implementation can be referred <a href="https://github.com/OhYoooo/Segment-Tree/blob/master/segment_tree.py" target="_blank" rel="noopener">here</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://ohyoooo.github.io/2019/10/29/Segment-Tree/" data-id="ck2bcghki000edsaoyo7wdl09" class="article-share-link">Share</a>
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Segment-Tree/">Segment Tree</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2019/10/23/Min-Heap-Python-Implementation/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Min Heap</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+  <footer class="footer">
+  
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>&copy; 2019 OhYoooo</li>
+      <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
+      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/hexo.svg" alt="OhYoooo"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">Home</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">Archives</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/gallery">Gallery</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">About</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+      <li class="nav-item">
+          <div class="totop" id="totop">
+    <i class="fe fe-rocket"></i>
+</div>
+      </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+  <script src="/js/search.js"></script>
+
+
+<script src="/js/ocean.js"></script>
+<script src="/js/prettify.js"></script>
+<script src="/js/ocean.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+   $('pre').addClass('prettyprint linenums');
+     prettyPrint();
+   })
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/koharu.model.json"},"display":{"position":"right","width":200,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
