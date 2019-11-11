@@ -5,7 +5,7 @@ tags: [Min Heap, Algorithm, Data Structure]
 photos: ["../images/Min_Heap.png"]
 ---
 
-This is a python implementation of min-heap.
+This is a python implementation of min-heap. It takes runtime of **O(n)** to build/heapify and **O(lgn)** for each of the operation (push or pop).
 <!-- more -->
 <br/>
 
