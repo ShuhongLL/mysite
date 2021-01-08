@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head>
   <meta charset="utf-8">
   
   
@@ -13,13 +13,23 @@
   
     <link rel="shortcut icon" href="/favicon.ico">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/css/style.css">
+
   
-  <script src="/js/pace.min.js"></script>
-</head>
-</html>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
 <body>
 <main class="content">
   <section class="outer">
@@ -41,7 +51,7 @@
     
       <div class="article-meta">
         <a href="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" class="article-date">
-  <time datetime="2019-05-22T09:19:14.000Z" itemprop="datePublished">2019-05-22</time>
+  <time datetime="2019-05-22T22:19:14.000Z" itemprop="datePublished">2019-05-22</time>
 </a>
         
       </div>
@@ -72,40 +82,40 @@
 │       ├── .part-timestamp1.crc
 │       ├── part-timestamp2
 │       └── .part-timestamp2.crc
-</code></pre><p>Since the data stream will be replicated on disk, the performance will slow down due to file I/O. <strong>Local checkpoint</strong> privileges performance over fault-tolerance which will persist RDDs on local storage in the executors. Read or write will be faster in this case; however if a driver fails, the data not yet executed may not be recoverable. As default, the data storeage level is set to <code>MEMORY_AND_DISK</code> which saves data in cache and disk (some in cache and some in disk). For here I changed to <code>MEMORY_AND_DISK_SER_2</code> (more details can be referred to <a href="https://stackoverflow.com/questions/30520428/what-is-the-difference-between-memory-only-and-memory-and-disk-caching-level-in" target="_blank" rel="noopener">here</a>). The different is that, unlike <strong>cache</strong> only, the checkpoints doesn’t save DAG with all the parents of RDDs; instead, they only save particular RDDs and remain for a longer time than cache. The time of persistance is strictly related to the executed computation and ends with the end of the spark application. To apply the checkpoint machanism, you just simply need to set the checkpoint directory when you are creating the <strong>StreamingContext</strong></p>
-<pre><code class="scala">def createContext(...params): StreamingContext = {
+</code></pre><p>Since the data stream will be replicated on disk, the performance will slow down due to file I/O. <strong>Local checkpoint</strong> privileges performance over fault-tolerance which will persist RDDs on local storage in the executors. Read or write will be faster in this case; however if a driver fails, the data not yet executed may not be recoverable. As default, the data storeage level is set to <code>MEMORY_AND_DISK</code> which saves data in cache and disk (some in cache and some in disk). For here I changed to <code>MEMORY_AND_DISK_SER_2</code> (more details can be referred to <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/30520428/what-is-the-difference-between-memory-only-and-memory-and-disk-caching-level-in">here</a>). The different is that, unlike <strong>cache</strong> only, the checkpoints doesn’t save DAG with all the parents of RDDs; instead, they only save particular RDDs and remain for a longer time than cache. The time of persistance is strictly related to the executed computation and ends with the end of the spark application. To apply the checkpoint machanism, you just simply need to set the checkpoint directory when you are creating the <strong>StreamingContext</strong></p>
+<pre><code class="scala">def createContext(...params): StreamingContext = &#123;
     val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)   
      val ssc = new StreamingContext(sparkConf, Seconds(1))
      ...
      ssc.checkpoint(CHECK_POINT_DIR)
      ssc
-}
+&#125;
 </code></pre>
 <p>and before an action is operated on RDD:</p>
 <pre><code class="scala">    sRDD.checkpoint()
-    sRDD.foreachPartition { partitionOfRecords =&gt; {     
+    sRDD.foreachPartition &#123; partitionOfRecords =&gt; &#123;     
         ...
-        }
-    }
+        &#125;
+    &#125;
 </code></pre>
 <p>and <code>sRDD.isCheckpointed()</code> will return <strong>true</strong>. For cleaning, the RDDs stored in cache will be cleaned with all other memory after the whole spark application is finished or terminated; the reliable RDDs stored on disk can be cleaned manually or set<br><code>spark.cleaner.referenceTracking.cleanCheckpoints</code> property to be <strong>true</strong> to enable automatic cleaning. This driver recovery mechanism is sufficient to ensure zero data loss if all data was reliably store in the system. However for my circumstance, the data is read from <strong>kafka</strong> and some of the data buffered in memory could be lost. If the driver process fails, all the executors running will be killed as well, along with any data in their memory. This pushes me to look for other mechanisms which are more advanced.<br><br></p>
 <h2 id="Write-Ahead-Logs"><a href="#Write-Ahead-Logs" class="headerlink" title="Write Ahead Logs"></a>Write Ahead Logs</h2><p>Write Ahead Logs are used in database and file systems to ensure the durability of any data operations. The intention of the operation is first written down into a durable log , and then the operation is applied to the data. If the system fails in the middle of applying the operation, it can recover by reading the log and reapplying the operations it had intended to do.</p>
-<p>Spark streaming uses <strong>Receiver</strong> to read data from <strong>Kafka</strong>. They run as long-running tasks in the executors and store the revecived data in the memory of the executors. If you enable the <strong>checkpoint</strong>, the data will be checkpointed either in cache or disk <strong>in executors</strong> before porceed into the application drivers. Unlike <strong>checkpoint</strong>, applying <strong>WAL</strong> will instead backup the recevied data in an <strong>external fault-tolerant filesystem</strong>. And after the executor batches the received data and sends to the driver, <strong>WAL</strong> supports another log to store the block metadata into external filesystem before being executed.<br><img src="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/wal_spark.png" alt="https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html"><br>(diagram from <a href="https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html" target="_blank" rel="noopener">https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html</a>)<br>Spark streaming starts supporting WAL after version 1.2 and can be enabled by setting the config:</p>
+<p>Spark streaming uses <strong>Receiver</strong> to read data from <strong>Kafka</strong>. They run as long-running tasks in the executors and store the revecived data in the memory of the executors. If you enable the <strong>checkpoint</strong>, the data will be checkpointed either in cache or disk <strong>in executors</strong> before porceed into the application drivers. Unlike <strong>checkpoint</strong>, applying <strong>WAL</strong> will instead backup the recevied data in an <strong>external fault-tolerant filesystem</strong>. And after the executor batches the received data and sends to the driver, <strong>WAL</strong> supports another log to store the block metadata into external filesystem before being executed.<br><img src="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/wal_spark.png" alt="https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html"><br>(diagram from <a target="_blank" rel="noopener" href="https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html">https://databricks.com/blog/2015/01/15/improved-driver-fault-tolerance-and-zero-data-loss-in-spark-streaming.html</a>)<br>Spark streaming starts supporting WAL after version 1.2 and can be enabled by setting the config:</p>
 <pre><code class="scala">val ssc = StreamingContext.createContext(...params)
 
-def createContext(...params): StreamingContext = {
+def createContext(...params): StreamingContext = &#123;
     val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)
                                    .set(&quot;spark.streaming.receiver.writeAheadLog.enable&quot;,&quot;true&quot;)    
     val ssc = new StreamingContext(sparkConf, Seconds(1))
     ...
     ssc.checkpoint(CHECK_POINT_DIR)
     ssc
-}
+&#125;
 </code></pre>
 <p>Set the spark automatically clean checkpoints to release disk memory:</p>
 <pre><code class="scala">val ssc = StreamingContext.createContext(...params)
 
-def createContext(...params): StreamingContext = {
+def createContext(...params): StreamingContext = &#123;
     val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)
                                    .set(&quot;spark.streaming.receiver.writeAheadLog.enable&quot;,&quot;true&quot;)
                                    .set(&quot;spark.cleaner.referenceTracking.cleanCheckpoints&quot;, &quot;true&quot;)    
@@ -113,13 +123,13 @@ def createContext(...params): StreamingContext = {
     ...
     ssc.checkpoint(CHECK_POINT_DIR)
     ssc
-}
+&#125;
 
 </code></pre>
 <p>This will not clean the latest checkpoint as it is still referred to by the application to recover from possible failures. If you expect to restart the application driver if it crashed due to some errors and exactly start from where it crashed last time instead of performing the whole operation once again, you can create <strong>StreamingContext</strong> from the previous checkpoint by using the method <code>getOrCreate()</code>:</p>
 <pre><code class="scala">val ssc = StreamingContext.getOrCreate(CHECK_POINT_DIR, () =&gt; createContext(...params))
 
-def createContext(...params): StreamingContext = {
+def createContext(...params): StreamingContext = &#123;
     val sparkConf = new SparkConf().setAppName(&quot;KpiAnalysis&quot;)
                                    .set(&quot;spark.streaming.receiver.writeAheadLog.enable&quot;,&quot;true&quot;)
                                    .set(&quot;spark.cleaner.referenceTracking.cleanCheckpoints&quot;, &quot;true&quot;)    
@@ -127,7 +137,7 @@ def createContext(...params): StreamingContext = {
     ...
     ssc.checkpoint(CHECK_POINT_DIR)
     ssc
-}
+&#125;
 </code></pre>
 <p>However after I tried switching to <code>getOrCreate()</code>, I had the following exception:</p>
 <pre><code>Exception in thread &quot;main&quot; org.apache.spark.SparkException: Failed to read checkpoint from directory checkpointDir
@@ -148,8 +158,8 @@ Caused by: java.io.IOException: java.lang.ClassCastException: cannot assign inst
 WARN BlockGenerator: Cannot stop BlockGenerator as its not in the Active state [state = StoppedAll]     
 WARN BatchedWriteAheadLog: BatchedWriteAheadLog Writer queue interrupted.
 </code></pre><p>And also the data will not be recoverable across applications or Spark upgrades and hence not very reliable<br><br></p>
-<h2 id="Kafka-Direct-API"><a href="#Kafka-Direct-API" class="headerlink" title="Kafka Direct API"></a>Kafka Direct API</h2><p>This mechanism is only available when you data source is <strong>Kafka</strong>. Kafka supports a commit strategy which is able to help you manage offsets of each topics. Each offset points to a slot in a topic. When the data stored in this slot is consumed by any receiver, Kafka will be acknowledged by this consumption and moves the index to the next data slot.<br><img src="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/Spark-Streaming-flow-for-offsets.png" alt="https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/"><br>(diagram from <a href="https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/" target="_blank" rel="noopener">https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/</a>)<br>When <code>enable.auto.commit</code> is set to be true, as soon as any receiver retrieves the data from the offset datastore in Kafka (here I use Kafka to store offsets), the receiver will automatically commit, which doesn’t ensure that the data is successfully executed in the spark streaming. Therefore, we have to disbale the auto-commit when we are creating DStream from Kafka. After the data is successfully processed, we manually commit the offset to the datastore by calling the Kafka direct API:</p>
-<pre><code class="scala">stream.foreachRDD { rdd =&gt;
+<h2 id="Kafka-Direct-API"><a href="#Kafka-Direct-API" class="headerlink" title="Kafka Direct API"></a>Kafka Direct API</h2><p>This mechanism is only available when you data source is <strong>Kafka</strong>. Kafka supports a commit strategy which is able to help you manage offsets of each topics. Each offset points to a slot in a topic. When the data stored in this slot is consumed by any receiver, Kafka will be acknowledged by this consumption and moves the index to the next data slot.<br><img src="/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/Spark-Streaming-flow-for-offsets.png" alt="https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/"><br>(diagram from <a target="_blank" rel="noopener" href="https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/">https://blog.cloudera.com/blog/2017/06/offset-management-for-apache-kafka-with-apache-spark-streaming/</a>)<br>When <code>enable.auto.commit</code> is set to be true, as soon as any receiver retrieves the data from the offset datastore in Kafka (here I use Kafka to store offsets), the receiver will automatically commit, which doesn’t ensure that the data is successfully executed in the spark streaming. Therefore, we have to disbale the auto-commit when we are creating DStream from Kafka. After the data is successfully processed, we manually commit the offset to the datastore by calling the Kafka direct API:</p>
+<pre><code class="scala">stream.foreachRDD &#123; rdd =&gt;
       //get current offset
       val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
@@ -160,17 +170,18 @@ WARN BatchedWriteAheadLog: BatchedWriteAheadLog Writer queue interrupted.
 
       //commit offset to kafka
       stream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
-    }
-  }
+    &#125;
+  &#125;
 </code></pre>
 <p>If an error occurs at any point during the execution, the offset won;t be committed to the kafka offset store and hence the same data will be resent by kafka, which ensures that the data will be executed only once.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" data-id="ck2u9w9mc0027rwaomg1f1ya7" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/22/Implement-Zero-Data-Loss-in-Spark-Streaming/" data-id="ckjnncqhv000a5opua497dcr0"
+         class="article-share-link">Share</a>
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/">Kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spark/">Spark</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spark/" rel="tag">Spark</a></li></ul>
 
     </footer>
 
@@ -190,7 +201,7 @@ WARN BatchedWriteAheadLog: BatchedWriteAheadLog Writer queue interrupted.
       </a>
     
     
-      <a href="/2019/05/22/如何用VS-Code免翻墙听网易云音乐/" class="article-nav-link">
+      <a href="/2019/05/22/%E5%A6%82%E4%BD%95%E7%94%A8VS-Code%E5%85%8D%E7%BF%BB%E5%A2%99%E5%90%AC%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90/" class="article-nav-link">
         <strong class="article-nav-caption">Olde posts</strong>
         <div class="article-nav-title">如何用VS Code免翻墙听网易云音乐</div>
       </a>
@@ -220,9 +231,9 @@ WARN BatchedWriteAheadLog: BatchedWriteAheadLog Writer queue interrupted.
 </ul>
     </div>
     <ul class="list-inline">
-      <li>&copy; 2019 OhYoooo</li>
+      <li>&copy; 2021 OhYoooo</li>
       <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
-      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+      <!-- <li>Theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
     </ul>
   </div>
 </footer>
@@ -288,21 +299,37 @@ WARN BatchedWriteAheadLog: BatchedWriteAheadLog Writer queue interrupted.
 </div>
 </div>
 </aside>
+
 <script src="/js/jquery-2.0.3.min.js"></script>
+
+
 <script src="/js/lazyload.min.js"></script>
+
+
 <script src="/js/busuanzi-2.3.pure.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
 
 
 
-  <script src="/js/search.js"></script>
+
+  
+<script src="/js/search.js"></script>
+
+
 
 
 <script src="/js/ocean.js"></script>
+
+
 <script src="/js/prettify.js"></script>
+
+
 <script src="/js/ocean.js"></script>
+
 
 <script type="text/javascript">
   $(document).ready(function(){

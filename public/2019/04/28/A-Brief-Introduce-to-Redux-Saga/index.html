@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head>
   <meta charset="utf-8">
   
   
@@ -13,13 +13,23 @@
   
     <link rel="shortcut icon" href="/favicon.ico">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/css/style.css">
+
   
-  <script src="/js/pace.min.js"></script>
-</head>
-</html>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
 <body>
 <main class="content">
   <section class="outer">
@@ -41,7 +51,7 @@
     
       <div class="article-meta">
         <a href="/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" class="article-date">
-  <time datetime="2019-04-28T05:35:50.000Z" itemprop="datePublished">2019-04-28</time>
+  <time datetime="2019-04-28T18:35:50.000Z" itemprop="datePublished">2019-04-28</time>
 </a>
         
       </div>
@@ -63,7 +73,7 @@
 
 
       
-        <p>If you are quite experienced with redux, which is a predictable state container for JavaScript applications (<strong>Note:</strong> even thouth React and Redux is a popular combination to build fast and powerful apps, Redux is not necessarily combined with React), you are definitely feeling comfortable with its powerful store which manages all the global states and provides much cleaner logic flows to change them. If you are new to redux, <a href="https://redux.js.org/introduction/getting-started" target="_blank" rel="noopener">here</a> is the guide to dive before we start our topic.<a id="more"></a></p>
+        <p>If you are quite experienced with redux, which is a predictable state container for JavaScript applications (<strong>Note:</strong> even thouth React and Redux is a popular combination to build fast and powerful apps, Redux is not necessarily combined with React), you are definitely feeling comfortable with its powerful store which manages all the global states and provides much cleaner logic flows to change them. If you are new to redux, <a target="_blank" rel="noopener" href="https://redux.js.org/introduction/getting-started">here</a> is the guide to dive before we start our topic.<a id="more"></a></p>
 <p>In a complex javascript application, asynchronous function is always one of the most annoying part where encounters tons of bugs. If not handle them properly, the app usually ends up with <strong><em>call back hell</em></strong>.<br><br></p>
 <h2 id="Haven’t-heard-of-CallBack-Hell"><a href="#Haven’t-heard-of-CallBack-Hell" class="headerlink" title="Haven’t heard of CallBack Hell?"></a><strong>Haven’t heard of <em>CallBack Hell</em>?</strong></h2><p>Well, in javascript, the only way you can suspend a computation and have the rest operations doing later is to put the rest operations into a callback function. This callback function usually returns a <strong><code>Promise</code></strong> (And has a type of <strong><code>Promise&lt;any&gt;</code></strong>). In order to easily mark those async functions, after <strong><em>ES6</em></strong> javascript provides extra modifiers <strong><code>async</code></strong> and <strong><code>await</code></strong>, which actually wraps up the original utilities of promise and makes it more readable to programmers. Hummm, sounds like things are going better… <del><strong>NO!! It doesn’t resolve anything!</strong></del> The core problem leads to a callback hell is the hierarchical async calls, for example</p>
 <p>you have some simple synchronous functions which are in a chain to accomplish some logics:</p>
@@ -73,83 +83,83 @@ c = getMoreAndMore(b);
 ...
 </code></pre>
 <p>It looks fine for now, but what if they all turn out to be async? Then you have to follow the callback style to make them operate one right after another is done:</p>
-<pre><code class="javascript">getSomthing(function(a) {
-    getMore(a, function(b) {
-        getMoreAndMore(b, function(c) {
+<pre><code class="javascript">getSomthing(function(a) &#123;
+    getMore(a, function(b) &#123;
+        getMoreAndMore(b, function(c) &#123;
             //keep going...
-        });
-    });
-});
+        &#125;);
+    &#125;);
+&#125;);
 </code></pre>
 <p>Or you prefer <strong><em>ES6</em></strong>:</p>
-<pre><code class="javascript">async function getSomething(a) {
+<pre><code class="javascript">async function getSomething(a) &#123;
     await b = ToDo(a);
-    return await getMore((b) =&gt; {
+    return await getMore((b) =&gt; &#123;
         return await ToDo(b);
-    }).then((c) =&gt; {
+    &#125;).then((c) =&gt; &#123;
         return await ToDo(c);
-    }).then(...);
-}
+    &#125;).then(...);
+&#125;
 </code></pre>
 <p>Looks really confused? This will getting even uglier if we are using callbacks in loops.<br><br></p>
 <h2 id="Redux-Thunks"><a href="#Redux-Thunks" class="headerlink" title="Redux Thunks"></a>Redux Thunks</h2><p>Back to our redux app, we usually want to update some states after an async call to inform the UI that the data is ready to be fetched. That is always achieved by dispatching an action from the component to the reducer:</p>
-<pre><code class="javascript">async const callAPI = () =&gt; {
+<pre><code class="javascript">async const callAPI = () =&gt; &#123;
     ...
     return response;
-};
+&#125;;
 ...
-async const updateUI = (...params) =&gt; {
+async const updateUI = (...params) =&gt; &#123;
     const res = await callAPI();
     if (res.status === 200)
-        dispatch({type: &quot;UPDATE&quot;, isSuccess: true});
-};
+        dispatch(&#123;type: &quot;UPDATE&quot;, isSuccess: true&#125;);
+&#125;;
 ...
-render({
+render(&#123;
     ...
     this.props.isSuccess?
         showData() : showError()
-});
+&#125;);
 </code></pre>
 <p>This isn’t bad, but we are always looking for something better. An advanced way to rewrite it is using redux middleware. <strong><em>Middleware</em></strong> is somewhere you can put the code after the framework receives a request and before it generates a response. For example, we want to add a logger in the redux store so that when the store catches an action, before it returns the new state, the logger can log the previous state and the new generated state. This is what can be added as a middleware:</p>
-<pre><code class="javascript">function logger(store) {
-    return function wrapDispatch (next) {
-        return function dispatchAndLog (action) {
+<pre><code class="javascript">function logger(store) &#123;
+    return function wrapDispatch (next) &#123;
+        return function dispatchAndLog (action) &#123;
             console.log(&quot;dispatching.. &quot;, action);
             let result = next(action);
             console.log(&quot;new state&quot;, store.getState());
             return result;
-        }
-    }
-}
+        &#125;
+    &#125;
+&#125;
 </code></pre>
-<p>There are more advanced ways to add a logger. If you are interested, please refer to the <a href="https://redux.js.org/advanced/middleware" target="_blank" rel="noopener">offical documentation</a>. With our middleware, the previous example can be written in a cleaner way:</p>
-<pre><code class="javascript">const callAPI = () =&gt; {
-    return((dispatch) =&gt; {
+<p>There are more advanced ways to add a logger. If you are interested, please refer to the <a target="_blank" rel="noopener" href="https://redux.js.org/advanced/middleware">offical documentation</a>. With our middleware, the previous example can be written in a cleaner way:</p>
+<pre><code class="javascript">const callAPI = () =&gt; &#123;
+    return((dispatch) =&gt; &#123;
         dispatch(startCallingApiAction);
-        actualCallApi().then(data =&gt; {
+        actualCallApi().then(data =&gt; &#123;
             dispatch(successAction(data));
-        }).fail(err =&gt; {
+        &#125;).fail(err =&gt; &#123;
             dispatch(failedAction(err));
-        });
-    });
-};
+        &#125;);
+    &#125;);
+&#125;;
 </code></pre>
 <p>The successful response data is wrapped in the payload of the action, sent to the reducer. Once the store updates the data, it will be mapped as a prop back to the component and request for a rerender. This middleware is also called <strong><em>thunk</em></strong>. By applying thunk to decouple the presentation layer, we can get rid of most of the side effects in components, instead, managing and orchestrating side effects in thunks.</p>
 <p>This is great, so why are we even considering <strong><em>saga</em></strong>? Well, one of the advantages of middleware is that it can be chained. Every middleware mounted in redux store starts an individual thread (or something really looks like a thread in <strong><em>NodeJS</em></strong>). When a middleware captures an action and handles its side effect, it can dispatch a new action to another middleware to do nested logics. This behavior of middleware indicates that thunks can be chained as well, for example thunkA forwards its return payload to thunkB and thunkB forwards its return payload to… <strong>Wait! That sounds quite familiar!! Is that the case of callback hell??</strong> Unfortunately, a good thing plus another good feature doesn’t always end up with something better. <del>It could be some shit as well (笑)</del> In this case, true, this is exactly the callback hell.<br><br></p>
 <h2 id="Redux-Saga"><a href="#Redux-Saga" class="headerlink" title="Redux Saga"></a>Redux Saga</h2><p>To handle the possible endless callback functions and also to make it more easily to test in a component which has complicated logics, we need to change our previous thoughts. Just like shifting from Process Oriented Programming to Object Oriented Programming, instead of telling the application how to handle the side effects, suppose it already knows how to call a function and how to dispatch an action, all we need to do is to <strong>give instructions about what to do next</strong> and we don’t care about how those instructions will be executed (Saga handles the executions).</p>
 <p>Then the thunks example can be changed as following:</p>
-<pre><code class="javascript">export function* apiSideEffect(action) {
-    try{
+<pre><code class="javascript">export function* apiSideEffect(action) &#123;
+    try&#123;
         const data = yield call(actualCallApi);
-        yield put({ type:&quot;SUCCESS&quot;, payload: data });
-    } catch(err) {
-        yield put({ type:&quot;FAILED&quot;, payload: err });
-    }
-}
+        yield put(&#123; type:&quot;SUCCESS&quot;, payload: data &#125;);
+    &#125; catch(err) &#123;
+        yield put(&#123; type:&quot;FAILED&quot;, payload: err &#125;);
+    &#125;
+&#125;
 
-export function* apiSaga() {
+export function* apiSaga() &#123;
     yield takeEvery(&quot;CLICK_TO_CALL_API&quot;, apiSideEffect);
-}
+&#125;
 </code></pre>
 <p>There are serval fucntions already being integrated in Saga:</p>
 <blockquote>
@@ -172,23 +182,23 @@ export function* apiSaga() {
 <p><strong><em>Imperative:</em></strong> consists of commands for the computer to perform, focuses on describing how a program operates</p>
 </blockquote>
 <p>In the case of take, the control is inverted. Instead of the actions being pushed to the handler tasks, the <strong>Saga is pulling the action by itself</strong>. An additional generator, known as <strong><em>watcher</em></strong> which contains <strong><em>take</em></strong> has to be created to watch a specific action and being triggered once the following action is dispatched in the application. There are two ways to create a watcher, one is using the buid-in functions (<strong><em>Saga Helper</em></strong>):</p>
-<pre><code class="javascript">function* watchFetchData() {
+<pre><code class="javascript">function* watchFetchData() &#123;
     yield takeEvery(&quot;FETCH_REQUEST&quot;, callFetchDataApi);
-}
+&#125;
 </code></pre>
 <p><strong><em>takeEvery</em></strong> allows multiple request to be proceeding at the same time. Or if you just want the latest request to be fired (the older one will be overrided during each time the watcher is triggered</p>
-<pre><code class="javascript">function* watchFetchData() {
+<pre><code class="javascript">function* watchFetchData() &#123;
     yield takeLatest(&quot;FETCH_REQUEST&quot;, callFetchDataApi);
-}
+&#125;
 </code></pre>
 <p>However by using <strong><em>take</em></strong>, it is possible to fully control an action observation process to build complex control flow:</p>
-<pre><code class="javascript">function* watchFetchData() {
-    while(true) {
+<pre><code class="javascript">function* watchFetchData() &#123;
+    while(true) &#123;
         const action = yield take(&quot;FETCH_REQUEST&quot;);
         console.log(action);
         yield call(callFetchDataApi, action.payload);
-    }
-}
+    &#125;
+&#125;
 </code></pre>
 <p>All right, now you have been exposed to everything you need to know before start trying redux saga on your own. Here is a short overall example that may also help:<br>Store:</p>
 <pre><code class="javascript">const sagaMiddleware = createSagaMiddleware();
@@ -196,79 +206,80 @@ const store = createStore(rootReducer, appluMiddleware(sagaMiddleware));
 sagaMiddleware.run(watchFetch);
 </code></pre>
 <p>Sagas:</p>
-<pre><code class="javascript">function* watchFetch(): Generator&lt;*, *, *&gt; {
+<pre><code class="javascript">function* watchFetch(): Generator&lt;*, *, *&gt; &#123;
     yield takeEvery(&quot;FETCH_ACTION&quot;, callFetchAPI);
-}
+&#125;
 
-function* callFetchAPI(): Generator&lt;*, *, *&gt; {
-    try {
-        yield put({ type: &quot;FETCHING&quot;, payload: ... });
+function* callFetchAPI(): Generator&lt;*, *, *&gt; &#123;
+    try &#123;
+        yield put(&#123; type: &quot;FETCHING&quot;, payload: ... &#125;);
         const data = yield call(actualCallApi);
-        yield put({ type: &quot;FETCH_SUCCESS&quot;, payload: data });
-    } catch(err) {
-        yield put({ type: &quot;FETCH_FAILED&quot;, payload: err });
-    }
-}
+        yield put(&#123; type: &quot;FETCH_SUCCESS&quot;, payload: data &#125;);
+    &#125; catch(err) &#123;
+        yield put(&#123; type: &quot;FETCH_FAILED&quot;, payload: err &#125;);
+    &#125;
+&#125;
 </code></pre>
 <p>Reducer:</p>
-<pre><code class="javascript">const reducer = (state = initState, action) =&gt; {
-    switch(action) {
+<pre><code class="javascript">const reducer = (state = initState, action) =&gt; &#123;
+    switch(action) &#123;
         case &quot;FETCHING&quot;:
-            return { loading: true, ...state };
+            return &#123; loading: true, ...state &#125;;
         case &quot;FETCH_SUCCESS&quot;:
-            return { loading: false, success: true, data: action.payload, ...state };   
+            return &#123; loading: false, success: true, data: action.payload, ...state &#125;;   
         case &quot;FETCH_FAILED&quot;:
-            return { loading: false, success: false, error: true, ...state };
+            return &#123; loading: false, success: false, error: true, ...state &#125;;
         default:
-            return { ...state };
-    }
-};
+            return &#123; ...state &#125;;
+    &#125;
+&#125;;
 </code></pre>
 <p>Component:</p>
-<pre><code class="javascript">class myComponent extends React.Component {
+<pre><code class="javascript">class myComponent extends React.Component &#123;
     const mapStateToProps = ...
     const mapDispatchToProps = ...
-    render() {
+    render() &#123;
         return (
-            &lt;button onClick = { () =&gt; this.props.dispatch({type: &quot;FETCH_ACTION&quot;}) }/&gt;   
-            {
+            &lt;button onClick = &#123; () =&gt; this.props.dispatch(&#123;type: &quot;FETCH_ACTION&quot;&#125;) &#125;/&gt;   
+            &#123;
                 this.props.loading?
                     &lt;p&gt;Loading..&lt;/p&gt; : this.props.error?
-                        &lt;p&gt;Error!&lt;/p&gt; : &lt;p&gt;{this.props.data}&lt;/p&gt;
-            }
+                        &lt;p&gt;Error!&lt;/p&gt; : &lt;p&gt;&#123;this.props.data&#125;&lt;/p&gt;
+            &#125;
         );
-    }
-}
+    &#125;
+&#125;
 export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
 
 </code></pre>
-<p>For more advanced concepts, there is a well-organized <a href="https://redux-saga.js.org/docs/advanced/" target="_blank" rel="noopener">Saga offical documentation</a> you can refer to if you want to dive deeper.<br><br></p>
+<p>For more advanced concepts, there is a well-organized <a target="_blank" rel="noopener" href="https://redux-saga.js.org/docs/advanced/">Saga offical documentation</a> you can refer to if you want to dive deeper.<br><br></p>
 <h2 id="How-to-test-Saga"><a href="#How-to-test-Saga" class="headerlink" title="How to test Saga?"></a>How to test Saga?</h2><p>A function that returns a simple object is easier to test than a function that directly makes an asynchronous call. For redux saga, each time you yield a function call will return a plain javascript object which makes the workflow much easier to test. You don’t need to use the real API, fake it, or mock it, instead just iterating over the generator function, asserting for equality on the values yielded.</p>
-<pre><code class="javascript">describe(&quot;fetch work flow&quot;, () =&gt; {
-    const generator = cloneableGenerator(callFetchAPI)({ type: &quot;FETCH_ACTION&quot; });
-    expect(generator.next().value).toEqual(put({ type: &quot;FETCHING&quot;, payload: ... }));    
+<pre><code class="javascript">describe(&quot;fetch work flow&quot;, () =&gt; &#123;
+    const generator = cloneableGenerator(callFetchAPI)(&#123; type: &quot;FETCH_ACTION&quot; &#125;);
+    expect(generator.next().value).toEqual(put(&#123; type: &quot;FETCHING&quot;, payload: ... &#125;));    
 
-    test(&quot;fetch success&quot;, () =&gt; {
+    test(&quot;fetch success&quot;, () =&gt; &#123;
         const clone = generator.clone();
-        expect(clone.next().value).toEqual(put({ type: &quot;FETCH_SUCCESS&quot; }));
+        expect(clone.next().value).toEqual(put(&#123; type: &quot;FETCH_SUCCESS&quot; &#125;));
         expect(generator.next().done).toEqual(true);
-    });
-});
+    &#125;);
+&#125;);
 </code></pre>
 <p>In the above example, we use <strong><code>clone()</code></strong> to test different control flows and <strong><code>next()</code></strong> to iterate to the next function ready be yielded. The mock return value can also be injected as an argument of <strong><code>next()</code></strong>:</p>
 <pre><code class="javascript">expect(clone.next(false).value).toEqual( put(fetchFailedAction()) );      
 </code></pre>
 <p><br></p>
-<h2 id="Saga-vs-Observables"><a href="#Saga-vs-Observables" class="headerlink" title="Saga vs Observables"></a>Saga vs Observables</h2><p>Redux saga is not the only solution to our apps which may have complex control flows, they are other helpful tools providing different trade-offs which can also resolve the async problems. Here are some good <a href="https://hackmd.io/s/H1xLHUQ8e" target="_blank" rel="noopener">code snippets</a> of saga vs observables that can open your mind :D</p>
+<h2 id="Saga-vs-Observables"><a href="#Saga-vs-Observables" class="headerlink" title="Saga vs Observables"></a>Saga vs Observables</h2><p>Redux saga is not the only solution to our apps which may have complex control flows, they are other helpful tools providing different trade-offs which can also resolve the async problems. Here are some good <a target="_blank" rel="noopener" href="https://hackmd.io/s/H1xLHUQ8e">code snippets</a> of saga vs observables that can open your mind :D</p>
 <p><br><br><br></p>
-<h2 id="References"><a href="#References" class="headerlink" title="References:"></a>References:</h2><p><a href="https://redux-saga.js.org/" target="_blank" rel="noopener">https://redux-saga.js.org/</a><br><a href="https://stackoverflow.com/questions/25098066/what-is-callback-hell-and-how-and-why-rx-solves-it" target="_blank" rel="noopener">https://stackoverflow.com/questions/25098066/what-is-callback-hell-and-how-and-why-rx-solves-it</a><br><a href="https://redux.js.org/advanced/middleware" target="_blank" rel="noopener">https://redux.js.org/advanced/middleware</a><br><a href="https://pub.dartlang.org/packages/redux_thunk" target="_blank" rel="noopener">https://pub.dartlang.org/packages/redux_thunk</a><br><a href="https://codeburst.io/how-i-test-redux-saga-fcc425cda018" target="_blank" rel="noopener">https://codeburst.io/how-i-test-redux-saga-fcc425cda018</a><br><a href="https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1" target="_blank" rel="noopener">https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1</a><br><a href="https://www.sitepoint.com/redux-without-react-state-management-vanilla-javascript/" target="_blank" rel="noopener">https://www.sitepoint.com/redux-without-react-state-management-vanilla-javascript/</a><br><a href="https://redux.js.org/introduction/getting-started" target="_blank" rel="noopener">https://redux.js.org/introduction/getting-started</a><br><a href="https://blog.logrocket.com/understanding-redux-saga-from-action-creators-to-sagas-2587298b5e71" target="_blank" rel="noopener">https://blog.logrocket.com/understanding-redux-saga-from-action-creators-to-sagas-2587298b5e71</a></p>
+<h2 id="References"><a href="#References" class="headerlink" title="References:"></a>References:</h2><p><a target="_blank" rel="noopener" href="https://redux-saga.js.org/">https://redux-saga.js.org/</a><br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/25098066/what-is-callback-hell-and-how-and-why-rx-solves-it">https://stackoverflow.com/questions/25098066/what-is-callback-hell-and-how-and-why-rx-solves-it</a><br><a target="_blank" rel="noopener" href="https://redux.js.org/advanced/middleware">https://redux.js.org/advanced/middleware</a><br><a target="_blank" rel="noopener" href="https://pub.dartlang.org/packages/redux_thunk">https://pub.dartlang.org/packages/redux_thunk</a><br><a target="_blank" rel="noopener" href="https://codeburst.io/how-i-test-redux-saga-fcc425cda018">https://codeburst.io/how-i-test-redux-saga-fcc425cda018</a><br><a target="_blank" rel="noopener" href="https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1">https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1</a><br><a target="_blank" rel="noopener" href="https://www.sitepoint.com/redux-without-react-state-management-vanilla-javascript/">https://www.sitepoint.com/redux-without-react-state-management-vanilla-javascript/</a><br><a target="_blank" rel="noopener" href="https://redux.js.org/introduction/getting-started">https://redux.js.org/introduction/getting-started</a><br><a target="_blank" rel="noopener" href="https://blog.logrocket.com/understanding-redux-saga-from-action-creators-to-sagas-2587298b5e71">https://blog.logrocket.com/understanding-redux-saga-from-action-creators-to-sagas-2587298b5e71</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="ck2u9w9m90025rwaogej2nylp" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/04/28/A-Brief-Introduce-to-Redux-Saga/" data-id="ckjnncqhn00015opu6xyuf0ww"
+         class="article-share-link">Share</a>
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/">Redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Saga/">Saga</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/" rel="tag">Redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Saga/" rel="tag">Saga</a></li></ul>
 
     </footer>
 
@@ -287,11 +298,6 @@ export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
         </div>
       </a>
     
-    
-      <a href="/2019/04/27/hello-world/" class="article-nav-link">
-        <strong class="article-nav-caption">Olde posts</strong>
-        <div class="article-nav-title">Hello World</div>
-      </a>
     
   </nav>
 
@@ -318,9 +324,9 @@ export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
 </ul>
     </div>
     <ul class="list-inline">
-      <li>&copy; 2019 OhYoooo</li>
+      <li>&copy; 2021 OhYoooo</li>
       <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
-      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+      <!-- <li>Theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
     </ul>
   </div>
 </footer>
@@ -386,21 +392,37 @@ export default connect(mapStateToProps, mapDispatchToProps)(myComponent);
 </div>
 </div>
 </aside>
+
 <script src="/js/jquery-2.0.3.min.js"></script>
+
+
 <script src="/js/lazyload.min.js"></script>
+
+
 <script src="/js/busuanzi-2.3.pure.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
 
 
 
-  <script src="/js/search.js"></script>
+
+  
+<script src="/js/search.js"></script>
+
+
 
 
 <script src="/js/ocean.js"></script>
+
+
 <script src="/js/prettify.js"></script>
+
+
 <script src="/js/ocean.js"></script>
+
 
 <script type="text/javascript">
   $(document).ready(function(){

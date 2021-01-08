@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head>
   <meta charset="utf-8">
   
   
@@ -13,13 +13,23 @@
   
     <link rel="shortcut icon" href="/favicon.ico">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/css/style.css">
+
   
-  <script src="/js/pace.min.js"></script>
-</head>
-</html>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
 <body>
 <main class="content">
   <section class="outer">
@@ -41,7 +51,7 @@
     
       <div class="article-meta">
         <a href="/2019/05/12/Type-slice-in-Golang/" class="article-date">
-  <time datetime="2019-05-12T06:35:54.000Z" itemprop="datePublished">2019-05-12</time>
+  <time datetime="2019-05-12T19:35:54.000Z" itemprop="datePublished">2019-05-12</time>
 </a>
         
       </div>
@@ -63,7 +73,7 @@
 
 
       
-        <p>This article is a summary from <a href="https://blog.golang.org/go-slices-usage-and-internals" target="_blank" rel="noopener">Andrew Gerrand’s blog</a></p>
+        <p>This article is a summary from <a target="_blank" rel="noopener" href="https://blog.golang.org/go-slices-usage-and-internals">Andrew Gerrand’s blog</a></p>
 <p>Golang has an unique type <strong>slice</strong> which is an abstraction built on top of Go’s <strong>array</strong> type. They are really similar but providing different means of working with sequences of typed data. So to understand slices we must first understand arrays.<a id="more"></a><br><br></p>
 <h2 id="Arrays-in-Go"><a href="#Arrays-in-Go" class="headerlink" title="Arrays in Go"></a>Arrays in Go</h2><p>An array in Go has to specify its <strong>length</strong> and <strong>element type</strong>. <strong>The size of the array is fixed and its length is part of its type</strong>. For example <code>[4]int</code> and <code>[5]int</code> are distinct and have different types even though they all store integers. And contrary to <strong>C/C++</strong>, the initial value of an array will be filled with <strong>0</strong> if it is not initialized.</p>
 <pre><code class="Go">var a [4]int
@@ -75,14 +85,14 @@ j := a[1]
 </code></pre>
 <p>Go’s arrays are values. <strong>An array variable denotes the entire array</strong>; it is not a pointer to the first array element (as would be the case in C/C++). This means that when you assign or pass around an array value you will make a copy of its contents. (To avoid the copy you could pass a pointer to the array, but then that’s a pointer to an array, not an array)</p>
 <p>An array literal can be specified like so:</p>
-<pre><code class="Go">b := [2]string{&quot;aa&quot;, &quot;bb&quot;}
+<pre><code class="Go">b := [2]string&#123;&quot;aa&quot;, &quot;bb&quot;&#125;
 </code></pre>
 <p>Or, you can have the compiler counting the array elements for you:</p>
-<pre><code class="Go">b := [...]string{&quot;aa&quot;, &quot;bb&quot;}
+<pre><code class="Go">b := [...]string&#123;&quot;aa&quot;, &quot;bb&quot;&#125;
 </code></pre>
 <p>In both cases, the type of b is <strong>[2]string</strong>.<br><br></p>
 <h2 id="Slices-in-Go"><a href="#Slices-in-Go" class="headerlink" title="Slices in Go"></a>Slices in Go</h2><p>Arrays are a bit inflexible, so you don’t see them too often in the code. Slices, though, are everywhere. Unlike an array type, a slice type has no specific length:</p>
-<pre><code class="Go">b := []string{&quot;aa&quot;, &quot;bb&quot;}
+<pre><code class="Go">b := []string&#123;&quot;aa&quot;, &quot;bb&quot;&#125;
 </code></pre>
 <p>We can use build-in function <code>make()</code> to define a slice:</p>
 <pre><code class="Go">func make([]T, len, cap) []T
@@ -90,7 +100,7 @@ j := a[1]
 <p><strong>T</strong> represent the type of the elements. Function <strong>make</strong> accepts type, length and capacity(optional) as parameters. When it is called, <strong>make</strong> will allocate an array and returns a slice that refers to that array</p>
 <pre><code class="Go">var s []byte
 s = make([]byte, 5, 5)
-//s == []byte{0, 0, 0, 0, 0}
+//s == []byte&#123;0, 0, 0, 0, 0&#125;
 </code></pre>
 <p>If <strong>cap</strong> is not specified, it will be init as the value of <strong>len</strong>. We can use the build-in functions <code>len()</code> and <code>cap()</code> to check the length and capacity of a slice:</p>
 <pre><code class="Go">len(s) == 5
@@ -98,34 +108,34 @@ cap(s) == 5
 </code></pre>
 <p>The zero value of a slice is <strong>nil</strong>. The len and cap functions will both return <strong>0</strong> for a nil slice.</p>
 <p>A slice can also be formed by “slicing” an existing slice or array, for example, the expression b[1:4] creates a slice including elements 1 through 3 of b:</p>
-<pre><code class="Go">b := []byte{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;}
-// b[1:4] == []byte{&#39;b&#39;, &#39;c&#39;, &#39;d&#39;}, sharing the same storage as b
+<pre><code class="Go">b := []byte&#123;&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;&#125;
+// b[1:4] == []byte&#123;&#39;b&#39;, &#39;c&#39;, &#39;d&#39;&#125;, sharing the same storage as b
 </code></pre>
 <p>The start and end indices of a slice expression are optional; they default to zero and the slice’s length respectively:</p>
-<pre><code class="Go">// b[:2] == []byte{&#39;a&#39;, &#39;b&#39;}
-// b[2:] == []byte{&#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;}
+<pre><code class="Go">// b[:2] == []byte&#123;&#39;a&#39;, &#39;b&#39;&#125;
+// b[2:] == []byte&#123;&#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;&#125;
 // b[:] == b
 </code></pre>
 <p>This is also the syntax to create a slice given an array:</p>
-<pre><code class="Go">x := [3]string{&quot;Лайка&quot;, &quot;Белка&quot;, &quot;Стрелка&quot;}
+<pre><code class="Go">x := [3]string&#123;&quot;Лайка&quot;, &quot;Белка&quot;, &quot;Стрелка&quot;&#125;
 s := x[:] // a slice referencing the storage of x
 </code></pre>
 <p>Slicing does not copy the slice’s data. It creates a new slice value that points to the original array. This makes slice operations as efficient as manipulating array indices. Therefore, modifying the elements of a re-slice modifies the elements of the original slice:</p>
-<pre><code class="Go">d := []byte{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;}
+<pre><code class="Go">d := []byte&#123;&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;&#125;
 e := d[2:]
-// e == []byte{&#39;c&#39;, &#39;d&#39;}
+// e == []byte&#123;&#39;c&#39;, &#39;d&#39;&#125;
 
 // now change the re-slice will also change the original slice  
 e[1] = &#39;m&#39;
-// e == []byte{&#39;c&#39;, &#39;m&#39;}
-// d == []byte{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;m&#39;}
+// e == []byte&#123;&#39;c&#39;, &#39;m&#39;&#125;
+// d == []byte&#123;&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;m&#39;&#125;
 </code></pre>
 <p>A slice cannot be grown beyond its capacity. Attempting to do so will cause a <strong><em>runtime panic</em></strong>, just as when indexing outside the bounds of a slice or array. Similarly, slices cannot be re-sliced below zero to access earlier elements in the array.<br><br></p>
 <h2 id="Double-the-capacity-of-a-slice"><a href="#Double-the-capacity-of-a-slice" class="headerlink" title="Double the capacity of a slice"></a>Double the capacity of a slice</h2><p>To increase the capacity of a slice, we must create a new, larger slice and <strong>copy</strong> the contents of the original slice into it. The belowing example shows how to create a new slice <strong>t</strong> whihc doubles the capacity of <strong>s</strong>:</p>
 <pre><code class="Go">t := make([]byte, len(s), (cap(s) * 2))
-for i:= range s {
+for i:= range s &#123;
     t[i] = s[i]
-}
+&#125;
 s = t   //reassign s to t
 </code></pre>
 <p>The loop can be replaced by the build-in function <code>copy()</code>, which copies the data from source and returns the number of elements copied:</p>
@@ -137,45 +147,46 @@ copy(t, s)
 s = t
 </code></pre>
 <p>A common operation is to append new data to the tail of a slice:</p>
-<pre><code class="Go">func AppendByte(slice []byte, data ...type) []byte {
+<pre><code class="Go">func AppendByte(slice []byte, data ...type) []byte &#123;
     m := len(slice)
     n := m + len(data)
-    if n &gt; cap(slice) { //if the original capacity is not big enough     
+    if n &gt; cap(slice) &#123; //if the original capacity is not big enough     
         newSlice := make([]byte, (n + 1) * 2)
         copy(newSlice, slice)
         slice = newSlice
-    }
+    &#125;
     slice = slice[0:n] //shrink the capacity to the length of data  
     copy(slice[m:n], data)
     return slice
-}
+&#125;
 </code></pre>
 <p>This customized AppendByte function is really useful because we can fully control the size of a slice. However most programs do need such complete control. Go provides a build-in function <code>append()</code> which appends slice x to the end of slice s, expanding s if needed:</p>
 <pre><code class="Go">func append(s []T, x ...T) []T
 </code></pre>
 <p>Using <strong>…</strong> to append one slice to the end of another:</p>
-<pre><code class="Go">a := []string{&quot;aa&quot;, &quot;bb&quot;}
-b := []string{&quot;cc&quot;, &quot;dd&quot;}
+<pre><code class="Go">a := []string&#123;&quot;aa&quot;, &quot;bb&quot;&#125;
+b := []string&#123;&quot;cc&quot;, &quot;dd&quot;&#125;
 a = append(a, b...) //same as append(a, b[0], b[1], b[2])   
 </code></pre>
 <p>Another example of append:</p>
-<pre><code class="Go">func Filter(s []int, fn func(int) bool) []int {
+<pre><code class="Go">func Filter(s []int, fn func(int) bool) []int &#123;
     var p []int // p == nil
-    for _, v := range s {
-        if fn(v) {
+    for _, v := range s &#123;
+        if fn(v) &#123;
             p = append(p, v)
-        }
-    }
+        &#125;
+    &#125;
     return p
-}
+&#125;
 </code></pre>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/05/12/Type-slice-in-Golang/" data-id="ck2u9w9l0000jrwaodnwmxco1" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/05/12/Type-slice-in-Golang/" data-id="ckjnncqik002e5opu7kocglk8"
+         class="article-share-link">Share</a>
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Array/">Array</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Slice/">Slice</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Array/" rel="tag">Array</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/" rel="tag">Golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Slice/" rel="tag">Slice</a></li></ul>
 
     </footer>
 
@@ -185,7 +196,7 @@ a = append(a, b...) //same as append(a, b[0], b[1], b[2])
     
   <nav class="article-nav">
     
-      <a href="/2019/05/22/如何用VS-Code免翻墙听网易云音乐/" class="article-nav-link">
+      <a href="/2019/05/22/%E5%A6%82%E4%BD%95%E7%94%A8VS-Code%E5%85%8D%E7%BF%BB%E5%A2%99%E5%90%AC%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90/" class="article-nav-link">
         <strong class="article-nav-caption">Newer posts</strong>
         <div class="article-nav-title">
           
@@ -225,9 +236,9 @@ a = append(a, b...) //same as append(a, b[0], b[1], b[2])
 </ul>
     </div>
     <ul class="list-inline">
-      <li>&copy; 2019 OhYoooo</li>
+      <li>&copy; 2021 OhYoooo</li>
       <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
-      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+      <!-- <li>Theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
     </ul>
   </div>
 </footer>
@@ -293,21 +304,37 @@ a = append(a, b...) //same as append(a, b[0], b[1], b[2])
 </div>
 </div>
 </aside>
+
 <script src="/js/jquery-2.0.3.min.js"></script>
+
+
 <script src="/js/lazyload.min.js"></script>
+
+
 <script src="/js/busuanzi-2.3.pure.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
 
 
 
-  <script src="/js/search.js"></script>
+
+  
+<script src="/js/search.js"></script>
+
+
 
 
 <script src="/js/ocean.js"></script>
+
+
 <script src="/js/prettify.js"></script>
+
+
 <script src="/js/ocean.js"></script>
+
 
 <script type="text/javascript">
   $(document).ready(function(){

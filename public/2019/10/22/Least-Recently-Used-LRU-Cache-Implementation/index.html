@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="generator" content="Hexo 3.8.0">
+<head>
   <meta charset="utf-8">
   
   
@@ -13,13 +13,23 @@
   
     <link rel="shortcut icon" href="/favicon.ico">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/css/style.css">
+
   
-  <script src="/js/pace.min.js"></script>
-</head>
-</html>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
 <body>
 <main class="content">
   <section class="outer">
@@ -41,7 +51,7 @@
     
       <div class="article-meta">
         <a href="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" class="article-date">
-  <time datetime="2019-10-22T05:28:12.000Z" itemprop="datePublished">2019-10-22</time>
+  <time datetime="2019-10-22T18:28:12.000Z" itemprop="datePublished">2019-10-22</time>
 </a>
         
       </div>
@@ -65,13 +75,13 @@
       
         <p>This implementation is based on <strong>double-linked-list</strong> and <strong>dictionary</strong>. Runtime: O(1)<br><a id="more"></a></p>
 <h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>initialize the linked-list with a sentinel head and tail<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_init_node.png" alt="init sentinel node"><br>And an empty dictionary:</p>
-<pre><code class="python">dict = { }
+<pre><code class="python">dict = &#123; &#125;
 </code></pre>
 <p><br></p>
 <h2 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h2><p>Suppose we have a object to insert</p>
-<pre><code>{ keyA: value_a }
+<pre><code>&#123; keyA: value_a &#125;
 </code></pre><p>Firstly we check out if out dictionary already contains a key named <code>A</code> (if so remove it from the linked list). Then append the new node to the tail of our linked-list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_first_insert.png" alt="init sentinel node"><br>Afterwards, add the new object to our dictionary key by <code>keyA</code></p>
-<pre><code class="python">dict = { keyA: valueA }
+<pre><code class="python">dict = &#123; keyA: valueA &#125;
 </code></pre>
 <p>If we have already constructed the follwing linked-list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_before_second_insert.png" alt="init sentinel node"><br>Then to insert { keyA: valueA } once again (for example, the same object is used/modified again)<br>We will firstly remove it from the current linked-list and append the same node at the tail of the list<br><img src="/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/LRU_after_second_insert.png" alt="init sentinel node"></p>
 <p>After the insertion, if the size of the list hit the maximum capacity, we need to pop the first element (which is not recently used), and assign sentinel head to the next element<br><br></p>
@@ -86,7 +96,7 @@
 class LRUCache:
     def __init__(self, capacity: int):
         self.capacity = capacity
-        self.dict = {}
+        self.dict = &#123;&#125;
         self.head = Node(0, 0)
         self.tail = Node(0, 0)
         self.head.next = self.tail
@@ -129,9 +139,10 @@ class LRUCache:
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" data-id="ck2u9w9k00006rwaot4nh6s6a" class="article-share-link">Share</a>
+      <a data-url="https://ohyoooo.github.io/2019/10/22/Least-Recently-Used-LRU-Cache-Implementation/" data-id="ckjnncqhw000c5opub9vegfqs"
+         class="article-share-link">Share</a>
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LRU/">LRU</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithm/" rel="tag">Algorithm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Data-Structure/" rel="tag">Data Structure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LRU/" rel="tag">LRU</a></li></ul>
 
     </footer>
 
@@ -181,9 +192,9 @@ class LRUCache:
 </ul>
     </div>
     <ul class="list-inline">
-      <li>&copy; 2019 OhYoooo</li>
+      <li>&copy; 2021 OhYoooo</li>
       <li>Powered by <a href="https://ja.wikipedia.org/wiki/%E6%84%9B" target="_blank">Love</a></li>
-      <!-- <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
+      <!-- <li>Theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li> -->
     </ul>
   </div>
 </footer>
@@ -249,21 +260,37 @@ class LRUCache:
 </div>
 </div>
 </aside>
+
 <script src="/js/jquery-2.0.3.min.js"></script>
+
+
 <script src="/js/lazyload.min.js"></script>
+
+
 <script src="/js/busuanzi-2.3.pure.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
 
 
 
-  <script src="/js/search.js"></script>
+
+  
+<script src="/js/search.js"></script>
+
+
 
 
 <script src="/js/ocean.js"></script>
+
+
 <script src="/js/prettify.js"></script>
+
+
 <script src="/js/ocean.js"></script>
+
 
 <script type="text/javascript">
   $(document).ready(function(){
