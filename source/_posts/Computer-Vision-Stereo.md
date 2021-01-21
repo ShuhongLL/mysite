@@ -4,7 +4,7 @@ date: 2021-01-07 20:02:19
 tags: [CV, stereo]
 katex: true
 mathjax: true
-photos: ["../images/stereo-cover.png"]
+photos: ["../images/stereo-cover.PNG"]
 ---
 
 Stereo is the extraction of 3D information from digital images by comparing the same objects about a scene captured by different cameras located at two vantage points. The information such as depth of the object can be extracted by examining the disparity changes among two images.
@@ -24,7 +24,7 @@ The ground truth image shows the correct object boundaries and their correspondi
 
 It is easily to come up with that the closer objects (smaller depths) will have larger disparities during the movement of the camera compared with the further objects (larger depths).
 
-![stere disparity map](stereo-intuition.png)
+![stere disparity map](stereo-intuition.PNG)
 
 For the object which is in the same depth (e.g. the table and the cans on it), their pixels are very likely to have the same disparities among the two views. Therefore, if there is any approach which is able to figure out the correct disparity for each pixel, then by assigning the same label (color) to pixels that share the same disparity, the depth of each object can be extracted from the scene.
 
@@ -40,7 +40,7 @@ For any pixel p compute SSD between two windows for all disparities {% mathjax %
 
 This approach can be optimized using dynamic programming which calculate the current summation of intensities and subtract the uncovered region to obtain the sum of intensities within the current window size.
 
-![stere image integral](stereo-image-integral.png)
+![stere image integral](stereo-image-integral.PNG)
 
 {% mathjax %}
 W=f_{in}(br)- f_{in}(bl)- f_{in}(tr) + f_{in}(tl)
@@ -135,7 +135,7 @@ The chosen size of the window also has effect to the result as larger window siz
 
 The scan-line approach seeks the shortest paths for pixels in the same scan line. An {% mathjax %}n * n{% endmathjax %} grid graph can be built using each scan line (n is the number of pixels located in the scan line). Horizontal and vertical edges on this graph describe occlusions, as well as disparity jumps (discontinuities). The diagonal lines on the graph represents disparity levels (shifts) that can be seen as depth layers.
 
-![stere scan line graph](stereo-scan-line-graph.png)
+![stere scan line graph](stereo-scan-line-graph.PNG)
 
 The loss function for a single pixel in the scan line can be expressed as the combination of the cost of photo consistency and the cost of the spatial coherence
 {% mathjax %}
@@ -210,14 +210,14 @@ A better result can be obtained by replacing the original images with the comput
 
 Full grid stereo is a more advanced approach using fully connected graph. In scan line stereo, the loss function is computed only using the pixels within the same scan line. To consider the contiguous among scan lines, vertical edges are added.
 
-![stere full grid graph](stereo-full-grid-graph.png)
+![stere full grid graph](stereo-full-grid-graph.PNG)
 
 Now, the loss function of a single pixel is not only decided by pixels on horizon, but also related to upper and lower pixels. Viterbi algorithm (DP) can be no longer applied since the graph apparently contains loops. Instead, apply graph cut to optimize the loss function. The weights of neighborhood edges on a single layer of the graph represents the spatial coherence (disparity jump). Multiple layers are required to represent the photo consistency (intensity change). The cost function becomes
 {% mathjax %}
 E(d)=\sum_{p \in G} D_p(d_p) + \sum_{p, q \in N} V(d_p, d_q)
 {% endmathjax %}
 
-![stere graph cut](stereo-graph-cut.png)
+![stere graph cut](stereo-graph-cut.PNG)
 
 The orthogonal edge represents the cost of photo consistency of the current pixel refers to a specific disparity change to the refer image. For example, the edge at the bottom layer represents the intensity difference between the current pixel and the pixel at the minimal disparity; the edge at the top layer represents the intensity difference between the current pixel and the pixel at the maximum disparity. After defining the 3D graph and applying max-flow, the cut occurred at the orthogonal edges is the result disparity for each pixel.
 
