@@ -20,6 +20,7 @@ Therefore, we need to apply image warping to one of the image to project it back
 
 ![homography example 2](homography-example-2.png)
 
+
 ## Feature Matching
 
 We need to identify the identical features among images. One way of doing this is to compute the [harris corners](https://en.wikipedia.org/wiki/Harris_Corner_Detector) over the entire images. Afterwards, we can manually choose good features from candidates.
@@ -61,6 +62,7 @@ model_robust, inliers = ransac((src, dst), ProjectiveTransform, min_samples=4, r
 ```
 
 ![feature matching ransac](feature-matching-ransac.png)
+
 
 ## Image Warping with Homography
 
@@ -127,6 +129,7 @@ wR_bad = warp(imR, (bad_trans + offset).inverse, output_shape=output_shape, cval
 ```
 
 ![feature matching ransac](homography-result.png)
+
 
 ## Blending & Image Feathering
 
